@@ -23,9 +23,6 @@ public class Ledger {
     @Column(name = "total_failed_amount", precision = 10, scale = 2)
     private BigDecimal totalFailedAmount;
 
-    @Column(name = "transaction_taken_time")
-    private Duration transactionTakenTime;
-
     @Column(name = "total_transactions")
     private Integer totalTransactions;
 
