@@ -11,11 +11,15 @@ import java.util.Date;
 @Entity
 @Getter
 @Setter
-@Table(name = "transaction_stats")
+@Table(name = "ledger")
 public class Ledger {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+
+    @Version
+    private Integer version;
 
     @Column(name = "total_amount", precision = 10, scale = 2)
     private BigDecimal totalAmount;

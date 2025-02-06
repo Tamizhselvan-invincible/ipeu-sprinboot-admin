@@ -32,6 +32,33 @@ public class UserServiceImpl implements UserService {
     }
 
 
+
+    @Transactional
+    @Override
+    public User updateUserBlockStatus(Integer id, User updatedUser) {
+        User existingUser = getUser(id);
+        if (existingUser == null) return null;
+
+        existingUser.setBlocked(updatedUser.isBlocked());
+        return userDao.save(existingUser);
+    }
+
+    @Transactional
+    @Override
+    public void blockUser(Integer userId) {
+        User user = userDao.findById(userId).orElseThrow();
+        user.setBlocked(true);
+        userDao.save(user);
+    }
+
+    @Transactional
+    @Override
+    public void unblockUser(Integer userId) {
+        User user = userDao.findById(userId).orElseThrow();
+        user.setBlocked(false);
+        userDao.save(user);
+    }
+
     @Transactional
     @Override
     public User updateUser(Integer id, User newUser) {

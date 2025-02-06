@@ -13,5 +13,7 @@ public interface UserService {
     List<User> getAllUsers();
     List<User> getAllUnBlockedUsers();
     List<User> getAllBlockedUsers();
-
+    User updateUserBlockStatus(Integer id, User newUser);
+    public void blockUser(Integer userId);
+    public void unblockUser(Integer userId);
 }
