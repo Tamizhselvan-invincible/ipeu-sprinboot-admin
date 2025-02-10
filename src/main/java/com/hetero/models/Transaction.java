@@ -3,17 +3,21 @@ package com.hetero.models;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.util.Date;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
 @Entity
 @Table(name = "transactions")
 public class Transaction {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,20 +35,23 @@ public class Transaction {
     @Column(name = "is_deleted")
     private boolean isDeleted;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private Integer userId;
 
     @Column(name = "transaction_taken_time")
-    private Duration transactionTakenTime;
+    private Long transactionTakenTime;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "subscription_plan_id", nullable = false)
+    @Cascade(org.hibernate.annotations.CascadeType.PERSIST)
     private SubscriptionPlan subscriptionPlan;
 
     @Column(name = "transaction_amount")
     @NotNull
     private BigDecimal amount;
+
+    @Column
+    private Platform platformType;
 
     @Column(name = "payment_method")
     @Enumerated(EnumType.STRING)

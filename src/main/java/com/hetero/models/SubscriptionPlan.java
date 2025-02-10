@@ -7,9 +7,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,8 +18,8 @@ import java.util.List;
 @Table(name = "subscription_plans")
 public class SubscriptionPlan {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @NotBlank(message = "Plan name is required")
     @Column(name = "plan_name")
@@ -56,6 +54,4 @@ public class SubscriptionPlan {
     @CreationTimestamp
     private Date dateCreated;
 
-    @OneToMany(mappedBy = "subscriptionPlan")
-    private List<Transaction> transactions = new ArrayList<>();
 }

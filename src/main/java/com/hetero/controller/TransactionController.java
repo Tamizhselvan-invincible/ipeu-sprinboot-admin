@@ -1,6 +1,7 @@
 package com.hetero.controller;
 
 
+import com.hetero.models.Platform;
 import com.hetero.models.Transaction;
 import com.hetero.service.LedgerService;
 import com.hetero.service.LedgerServiceImpl;
@@ -46,6 +47,22 @@ public class TransactionController {
     public ResponseEntity<List<Transaction>> getAllTransactions() {
         return ResponseEntity.ok(transactionService.getAllTransactions());
     }
+
+
+    @GetMapping("/all/{platform}")
+    public ResponseEntity<?> getAllTransactionsByPlatform(@PathVariable String platform) {
+        try {
+            // Convert String to Enum (Case-sensitive validation)
+            Platform platformEnum = Platform.valueOf(platform);
+
+            // Fetch transactions by platform type
+            return ResponseEntity.ok(transactionService.getAllTransactionsByPlatformType(platformEnum));
+        } catch (IllegalArgumentException e) {
+            // Return 400 Bad Request if the platform is invalid
+            return ResponseEntity.badRequest().body("Invalid platform type. Allowed values: iPeyU, Secondary, ALL");
+        }
+    }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<Transaction> getTransactionById(@PathVariable int id) {

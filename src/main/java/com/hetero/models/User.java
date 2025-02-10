@@ -1,5 +1,7 @@
 package com.hetero.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import jakarta.validation.constraints.*;
@@ -68,6 +70,8 @@ public class User {
     @UpdateTimestamp
     private Date dateUpdated;
 
+    @Column
+    private Platform platformType = Platform.ALL;
 
     @Column(name = "deleted_at",nullable = true)
     private Date deletedAt;
@@ -95,6 +99,8 @@ public class User {
     @Column(name = "os_type")
     private String osType;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "userId")
+    @JsonIgnore
+    @JsonManagedReference
     private List<Transaction> transactions = new ArrayList<>();
 }

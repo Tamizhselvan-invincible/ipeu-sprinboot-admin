@@ -1,7 +1,9 @@
 package com.hetero.service;
 
+import com.hetero.models.Platform;
 import com.hetero.models.Transaction;
 import com.hetero.models.User;
+import com.hetero.repository.TransactionDao;
 import com.hetero.repository.UserDao;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +20,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     UserDao userDao;
+
+    @Autowired
+    TransactionDao transactionDao;
 
     @Transactional
     @Override
@@ -41,6 +47,15 @@ public class UserServiceImpl implements UserService {
 
         existingUser.setBlocked(updatedUser.isBlocked());
         return userDao.save(existingUser);
+    }
+
+
+    @Transactional
+    @Override
+    public List<Transaction> getUserTransactions(Integer userId) {
+        List<Transaction> transactions = transactionDao.findByUserId(userId);
+        if (transactions == null) return new ArrayList<>();
+        return transactions;
     }
 
     @Transactional
@@ -93,7 +108,7 @@ public class UserServiceImpl implements UserService {
         // Handle transactions (if provided)
         if (newUser.getTransactions() != null && !newUser.getTransactions().isEmpty()) {
             for (Transaction transaction : newUser.getTransactions()) {
-                transaction.setUser(existingUser); // Ensure proper association
+                transaction.setUserId(existingUser.getId()); // Ensure proper association
             }
             existingUser.getTransactions().clear();
             existingUser.getTransactions().addAll(newUser.getTransactions());
@@ -103,6 +118,11 @@ public class UserServiceImpl implements UserService {
         return userDao.save(existingUser);
     }
 
+    @Transactional
+    @Override
+    public void updateUserTransactions (User user) {
+        userDao.save(user);
+    }
 
     @Transactional
     @Override
@@ -123,10 +143,14 @@ public class UserServiceImpl implements UserService {
         return userDao.findById(id).orElseThrow(() -> new EntityNotFoundException("User with ID " + id + " not found"));
     }
 
+
+
     @Transactional
     @Override
     public List<User> getAllUsers () {
-        return userDao.findAll();
+        List<User> users = userDao.findAll();
+        users.forEach(user -> user.getTransactions().size()); // Force initialization
+        return users;
     }
 
     @Transactional
@@ -141,4 +165,22 @@ public class UserServiceImpl implements UserService {
         return userDao.findByIsBlockedTrue();
     }
 
+    @Transactional
+    @Override
+    public List<User> getUsersByPlatform(Platform platform) {
+        return userDao.findByPlatformType(platform);
+    }
+
+    @Transactional
+    @Override
+    public List<User> getUnblockedUsersByPlatform(Platform platform) {
+        return userDao.findByPlatformTypeAndIsBlockedFalse(platform);
+    }
+
+    @Transactional
+    @Override
+    public List<User> getBlockedUsersByPlatform(Platform platform) {
+        return userDao.findByPlatformTypeAndIsBlockedTrue(platform);
+    }
 }
+

@@ -34,6 +34,22 @@ public class LedgerServiceImpl implements LedgerService {
 
 
 
+    @PostConstruct
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void init() {
+       if (ledgerDao.count() == 0) {
+           Ledger ledger = new Ledger();
+           ledger.setVersion(1);
+           ledger.setTotalAmount(new BigDecimal("0"));
+           ledger.setTotalTransactions(0);
+           ledger.setFailedTransactions(0);
+           ledger.setNoOfUsers(0);
+           ledger.setNoOfBlockedUsers(0);
+           ledger.setStatsDate(new Date());
+           ledgerDao.save(ledger);
+       }
+
+    }
 
     @Transactional
     public Ledger getLedger() {

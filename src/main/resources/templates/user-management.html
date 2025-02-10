@@ -5,6 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>User Management</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 56px;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            width: 240px;
+        }
+        .main-content {
+            margin-left: 240px;
+            padding: 20px;
+        }
+        .nav-link {
+            color: #333;
+            padding: 0.5rem 1rem;
+        }
+        .nav-link:hover {
+            background-color: #f8f9fa;
+        }
+        .nav-link.active {
+            background-color: #e9ecef;
+        }
+        .table-scroll {
+            overflow: auto;
+            max-height: 400px;
+            position: relative;
+        }
+        .table-scroll table {
+            margin-bottom: 0;
+        }
+        .table-scroll thead th {
+            position: sticky;
+            top: 0;
+            background-color: #f8f9fa;
+            z-index: 1;
+        }
+        .table {
+            width: 100%;
+            white-space: nowrap;
+        }
+        .table td, .table th {
+            min-width: 100px;
+        }
+    </style>
     <script>
         function confirmAction(event, message) {
             if (!confirm(message)) {
@@ -14,7 +62,83 @@
     </script>
 </head>
 <body>
-<div class="container mt-5">
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Admin Dashboard</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="bi bi-bell"></i></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="bi bi-person-circle"></i></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Sidebar -->
+<div class="sidebar bg-light">
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link active" href="#">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                <i class="bi bi-people"></i> Users
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                <i class="bi bi-currency-exchange"></i> Transactions
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                <i class="bi bi-gear"></i> Settings
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">    <!-- Navbar -->
+    <!-- Sidebar -->
+    <div class="sidebar bg-light">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="bi bi-people"></i> Users
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="bi bi-currency-exchange"></i> Transactions
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="bi bi-gear"></i> Settings
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+<div class=" main-content container mt-5">
 
 
     <div class="container py-4">
@@ -50,72 +174,89 @@
     </div>
     <h2 class="text-center">User Management</h2>
     <!-- Active Users Table -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h3>Active Users</h3>
+    <div class="row px-4">
+        <!-- Active Users Table -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Active Users</h5>
+                        <span class="badge bg-success">Active</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-scroll">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Mobile</th>
+                                <th>Last Login</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="user : ${users}" th:if="${!user.blocked}">
+                                <td th:text="${user.id}"></td>
+                                <td th:text="${user.firstName + ' ' + user.lastName}"></td>
+                                <td th:text="${user.email}"></td>
+                                <td th:text="${user.mobileNo}"></td>
+                                <td th:text="${#temporals.format(user.lastLoginTime, 'dd-MM-yyyy HH:mm')}"></td>
+                                <td><span class="badge bg-success" th:text="${user.accountStatus}"></span></td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm block-user" th:data-id="${user.id}">Block</button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Mobile</th>
-                    <th>Last Login</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="user : ${users}" th:if="${!user.blocked}">
-                    <td th:text="${user.id}"></td>
-                    <td th:text="${user.firstName + ' ' + user.lastName}"></td>
-                    <td th:text="${user.email}"></td>
-                    <td th:text="${user.mobileNo}"></td>
-                    <td th:text="${#temporals.format(user.lastLoginTime, 'dd-MM-yyyy HH:mm')}"></td>
-                    <td th:text="${user.accountStatus}"></td>
-                    <td>
-                        <button class="btn btn-warning btn-sm block-user" th:data-id="${user.id}">Block</button>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
 
-    <!-- Blocked Users Table -->
-    <div class="card">
-        <div class="card-header">
-            <h3>Blocked Users</h3>
-        </div>
-        <div class="card-body">
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Mobile</th>
-                    <th>Last Login</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="user : ${users}" th:if="${user.blocked}">
-                    <td th:text="${user.id}"></td>
-                    <td th:text="${user.firstName + ' ' + user.lastName}"></td>
-                    <td th:text="${user.email}"></td>
-                    <td th:text="${user.mobileNo}"></td>
-                    <td th:text="${#temporals.format(user.lastLoginTime, 'dd-MM-yyyy HH:mm')}"></td>
-                    <td th:text="${user.accountStatus}"></td>
-                    <td>
-                        <button class="btn btn-success btn-sm unblock-user" th:data-id="${user.id}">Unblock</button>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+        <!-- Blocked Users Table -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Blocked Users</h5>
+                        <span class="badge bg-danger">Blocked</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-scroll">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Mobile</th>
+                                <th>Last Login</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="user : ${users}" th:if="${user.blocked}">
+                                <td th:text="${user.id}"></td>
+                                <td th:text="${user.firstName + ' ' + user.lastName}"></td>
+                                <td th:text="${user.email}"></td>
+                                <td th:text="${user.mobileNo}"></td>
+                                <td th:text="${#temporals.format(user.lastLoginTime, 'dd-MM-yyyy HH:mm')}"></td>
+                                <td><span class="badge bg-danger" th:text="${user.accountStatus}"></span></td>
+                                <td>
+                                    <button class="btn btn-success btn-sm unblock-user" th:data-id="${user.id}">Unblock</button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -159,6 +300,7 @@
             });
         });
     </script>
+</div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -13,9 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class DashBoardController {
 
     @Autowired
-    TransactionService transactionService;
-
-    @Autowired
     UserService userService;
 
     @Autowired
