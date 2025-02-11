@@ -1,5 +1,6 @@
 package com.hetero.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -44,6 +45,7 @@ public class Transaction {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "subscription_plan_id", nullable = false)
     @Cascade(org.hibernate.annotations.CascadeType.PERSIST)
+    @JsonBackReference
     private SubscriptionPlan subscriptionPlan;
 
     @Column(name = "transaction_amount")

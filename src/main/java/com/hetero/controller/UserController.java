@@ -1,5 +1,6 @@
 package com.hetero.controller;
 
+import com.hetero.exception.UserNotFoundException;
 import com.hetero.models.Platform;
 import com.hetero.models.Transaction;
 import com.hetero.models.User;
@@ -13,8 +14,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -105,10 +108,10 @@ public class UserController {
     /// Delete Mapping
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable Integer id) {
+    public ResponseEntity<?> deleteUser(@PathVariable Integer id) {
         User user = userService.getUser(id);
         if (user == null) {
-            return ResponseEntity.notFound().build();
+            throw new UserNotFoundException("User with ID " + id + " not found");
         }
 
         try {
@@ -124,7 +127,8 @@ public class UserController {
                     )
             ));
             String message = userService.deleteUser(id);
-            return ResponseEntity.ok(message);
+            return ResponseEntity.ok(Map.of("message", message));
+
         } catch (ConcurrentModificationException e) {
             log.error("Failed to update ledger for user deletion: {}", id, e);
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Failed to update ledger");
@@ -150,12 +154,7 @@ public class UserController {
 
     @GetMapping("/{id}/transactions")
     public ResponseEntity<List<Transaction>> getUserTransactions(@PathVariable Integer id) {
-        List<Transaction> transactions = userService.getUserTransactions(id);
-        if (transactions.isEmpty()) {
-            System.out.println("DEBUG::::: No Transactions");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        return ResponseEntity.ok(transactions);
+        return ResponseEntity.ok(userService.getUserTransactions(id));
     }
 
     @GetMapping("/{id}")

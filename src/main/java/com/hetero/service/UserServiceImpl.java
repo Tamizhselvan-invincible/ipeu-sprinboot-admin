@@ -1,17 +1,18 @@
 package com.hetero.service;
 
+import com.hetero.exception.UserNotFoundException;
 import com.hetero.models.Platform;
 import com.hetero.models.Transaction;
 import com.hetero.models.User;
 import com.hetero.repository.TransactionDao;
 import com.hetero.repository.UserDao;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,13 +28,13 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public User addUser (User user) {
-
-        if(user.getMPin()==null){
-            SecureRandom secureRandom = new SecureRandom();
-            int randomMPin = 1000 + secureRandom.nextInt(9000);
-            user.setMPin(String.valueOf(randomMPin));
-
-        }
+//
+//        if(user.getMPin()==null){
+//            SecureRandom secureRandom = new SecureRandom();
+//            int randomMPin = 1000 + secureRandom.nextInt(9000);
+//            user.setMPin(String.valueOf(randomMPin));
+//
+//        }
         return userDao.save(user);
     }
 
@@ -43,7 +44,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateUserBlockStatus(Integer id, User updatedUser) {
         User existingUser = getUser(id);
-        if (existingUser == null) return null;
+        if (existingUser == null) new UserNotFoundException("User with ID " + id + " not found");
 
         existingUser.setBlocked(updatedUser.isBlocked());
         return userDao.save(existingUser);
@@ -53,8 +54,12 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public List<Transaction> getUserTransactions(Integer userId) {
+
+        User existingUser = getUser(userId);
+        if (existingUser == null) new UserNotFoundException("User with ID " + userId + " not found");
+
         List<Transaction> transactions = transactionDao.findByUserId(userId);
-        if (transactions == null) return new ArrayList<>();
+        if (transactions == null || transactions.isEmpty()) return new ArrayList<>();
         return transactions;
     }
 
@@ -81,7 +86,7 @@ public class UserServiceImpl implements UserService {
         Optional<User> optionalUser = userDao.findById(id);
 
         if (optionalUser.isEmpty()) {
-            throw new EntityNotFoundException("User with ID " + id + " not found");
+            throw new UserNotFoundException("User with ID " + id + " not found");
         }
 
         User existingUser = optionalUser.get();
@@ -114,6 +119,7 @@ public class UserServiceImpl implements UserService {
             existingUser.getTransactions().addAll(newUser.getTransactions());
         }
 
+        existingUser.setDateUpdated(new Date());
         // Save the updated user
         return userDao.save(existingUser);
     }
@@ -129,7 +135,7 @@ public class UserServiceImpl implements UserService {
     public String deleteUser (Integer id) {
         Optional<User> optionalUser = userDao.findById(id);
         if (optionalUser.isEmpty()) {
-            throw new EntityNotFoundException("User with ID " + id + " not found");
+            throw new UserNotFoundException("User with ID " + id + " not found");
         }else {
             User user = optionalUser.get();
             userDao.delete(user);
@@ -140,8 +146,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public User getUser (Integer id) {
-        return userDao.findById(id).orElseThrow(() -> new EntityNotFoundException("User with ID " + id + " not found"));
+        return userDao.findById(id).orElseThrow(() -> new UserNotFoundException("User with ID " + id + " not found"));
     }
+
 
 
 

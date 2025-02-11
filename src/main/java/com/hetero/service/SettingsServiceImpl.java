@@ -21,7 +21,7 @@ public class SettingsServiceImpl implements SettingsService {
         return settingsDao.save(setting);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     @Override
     public Settings getSettings () {
 
