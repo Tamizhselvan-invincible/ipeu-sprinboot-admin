@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/settings")
+@CrossOrigin(origins = "https://moving-raccoon-fleet.ngrok-free.app")
 public class SettingsController {
 
     @Autowired

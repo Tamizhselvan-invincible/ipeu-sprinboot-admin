@@ -18,6 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/transactions")
 @Slf4j
+@CrossOrigin(origins = "https://moving-raccoon-fleet.ngrok-free.app")
 public class TransactionController {
     @Autowired
     private TransactionService transactionService;

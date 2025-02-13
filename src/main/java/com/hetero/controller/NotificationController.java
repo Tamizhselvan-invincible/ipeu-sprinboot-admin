@@ -6,6 +6,7 @@ import com.hetero.service.FCMService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,6 +14,7 @@ import java.util.concurrent.ExecutionException;
 
 
 @RestController
+@CrossOrigin(origins = "https://moving-raccoon-fleet.ngrok-free.app")
 public class NotificationController {
 
     @Autowired

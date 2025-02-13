@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +21,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/users")
 @Slf4j
+@CrossOrigin(origins = "https://moving-raccoon-fleet.ngrok-free.app")
 public class UserController {
     @Autowired
     private UserService userService;
