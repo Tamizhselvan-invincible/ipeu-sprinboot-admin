@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+#Firebase (Need to Romove this on Production)
+*.json
+
