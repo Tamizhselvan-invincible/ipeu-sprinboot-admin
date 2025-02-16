@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  backend:
+    image: ipeyu-backend-admin  # The image name from your Docker build
+    build: .  # Builds from the Dockerfile in the current directory
+    container_name: ipeyu-backend
+    ports:
+      - "8008:8008"  # Map container port 8008 to host port 8008
+    depends_on:
+      mysql : # Ensures MySQL starts first
+        condition: service_healthy  # Ensure MySQL is fully running
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ipeyudb_docker
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+    restart: always
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-docker
+    ports:
+      - "3308:3306"  # Expose MySQL port
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=ipeyudb_docker
+    volumes:
+      - mysql_data:/var/lib/mysql  # Persist database data
+    restart: always
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+volumes:
+  mysql_data:  # Named volume for MySQL persistence
