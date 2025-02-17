@@ -167,12 +167,54 @@ protected void handleNewTransaction(Ledger ledger, Transaction transaction) {
         boolean delete;
         Transaction oldTransaction;
         UserUpdate userUpdate;
+
+        public TransactionUpdate (UpdateType type, Transaction transaction, boolean delete, Transaction oldTransaction, UserUpdate userUpdate) {
+            this.type = type;
+            this.transaction = transaction;
+            this.delete = delete;
+            this.oldTransaction = oldTransaction;
+            this.userUpdate = userUpdate;
+        }
+
+        public UpdateType getType () {
+            return type;
+        }
+
+        public Transaction getTransaction () {
+            return transaction;
+        }
+
+        public boolean isDelete () {
+            return delete;
+        }
+
+        public Transaction getOldTransaction () {
+            return oldTransaction;
+        }
+
+        public UserUpdate getUserUpdate () {
+            return userUpdate;
+        }
     }
 
     @Value
     public static class UserUpdate {
         int totalUsers;
         int blockedUsers;
+
+        public UserUpdate (int totalUsers, int blockedUsers) {
+            this.totalUsers = totalUsers;
+            this.blockedUsers = blockedUsers;
+        }
+
+
+        public int getTotalUsers () {
+            return totalUsers;
+        }
+
+        public int getBlockedUsers () {
+            return blockedUsers;
+        }
     }
 
     public enum UpdateType {
@@ -211,52 +253,3 @@ protected void handleNewTransaction(Ledger ledger, Transaction transaction) {
 
 }
 
-
-
-
-//@Transactional
-//@Override
-//public void updateLedger(int users, int blockedUsers) {
-//    Ledger ledger = ledgerDao.findById(1).orElseThrow(() -> new RuntimeException("Ledger not found"));
-//
-//    ledger.setNoOfUsers(users);
-//    ledger.setNoOfBlockedUsers(blockedUsers);
-//
-//    ledgerDao.save(ledger);
-//}
-//@Transactional
-//public synchronized void updateLedger(Transaction transaction, boolean isDelete, Transaction oldTransaction) {
-//    Ledger ledger = ledgerDao.findById(1).orElseThrow(() -> new RuntimeException("Ledger not found"));
-//
-//    if (isDelete) {
-//        // Handle deletion
-//        ledger.setTotalAmount(ledger.getTotalAmount().subtract(oldTransaction.getAmount()));
-//        ledger.setTotalTransactions(ledger.getTotalTransactions() - 1);
-//
-//        if (oldTransaction.getStatus() == TransactionStatus.Failed) {
-//            ledger.setTotalFailedAmount(ledger.getTotalFailedAmount().subtract(oldTransaction.getAmount()));
-//            ledger.setFailedTransactions(ledger.getFailedTransactions() - 1);
-//        }
-//    } else {
-//        // Handle update or new transaction
-//        if (oldTransaction != null) {  // If updating an existing transaction
-//            ledger.setTotalAmount(ledger.getTotalAmount().subtract(oldTransaction.getAmount()).add(transaction.getAmount()));
-//
-//            if (oldTransaction.getStatus() == TransactionStatus.Failed) {
-//                ledger.setTotalFailedAmount(ledger.getTotalFailedAmount().subtract(oldTransaction.getAmount()));
-//                ledger.setFailedTransactions(ledger.getFailedTransactions() - 1);
-//            }
-//        } else { // If adding a new transaction
-//            ledger.setTotalAmount(ledger.getTotalAmount().add(transaction.getAmount()));
-//            ledger.setTotalTransactions(ledger.getTotalTransactions() + 1);
-//        }
-//
-//        if (transaction.getStatus() == TransactionStatus.Failed) {
-//            ledger.setTotalFailedAmount(ledger.getTotalFailedAmount().add(transaction.getAmount()));
-//            ledger.setFailedTransactions(ledger.getFailedTransactions() + 1);
-//        }
-//    }
-//
-//    // Save ledger with versioning
-//    ledgerDao.save(ledger);
-//}

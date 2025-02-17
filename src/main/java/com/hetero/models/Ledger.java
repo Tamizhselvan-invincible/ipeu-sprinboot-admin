@@ -9,8 +9,6 @@ import java.time.Duration;
 import java.util.Date;
 
 @Entity
-@Getter
-@Setter
 @Table(name = "ledger")
 public class Ledger {
     @Id
@@ -42,4 +40,91 @@ public class Ledger {
     @Column(name = "stats_date")
     @Temporal(TemporalType.DATE)
     private Date statsDate;
+
+    public Ledger () {
+    }
+
+    public Ledger (Long id, Integer version, BigDecimal totalAmount, BigDecimal totalFailedAmount, Integer totalTransactions, Integer failedTransactions, Integer noOfUsers, Integer noOfBlockedUsers, Date statsDate) {
+        this.id = id;
+        this.version = version;
+        this.totalAmount = totalAmount;
+        this.totalFailedAmount = totalFailedAmount;
+        this.totalTransactions = totalTransactions;
+        this.failedTransactions = failedTransactions;
+        this.noOfUsers = noOfUsers;
+        this.noOfBlockedUsers = noOfBlockedUsers;
+        this.statsDate = statsDate;
+    }
+
+    public Long getId () {
+        return id;
+    }
+
+    public void setId (Long id) {
+        this.id = id;
+    }
+
+    public Integer getVersion () {
+        return version;
+    }
+
+    public void setVersion (Integer version) {
+        this.version = version;
+    }
+
+    public BigDecimal getTotalAmount () {
+        return totalAmount;
+    }
+
+    public void setTotalAmount (BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public BigDecimal getTotalFailedAmount () {
+        return totalFailedAmount;
+    }
+
+    public void setTotalFailedAmount (BigDecimal totalFailedAmount) {
+        this.totalFailedAmount = totalFailedAmount;
+    }
+
+    public Integer getTotalTransactions () {
+        return totalTransactions;
+    }
+
+    public void setTotalTransactions (Integer totalTransactions) {
+        this.totalTransactions = totalTransactions;
+    }
+
+    public Integer getFailedTransactions () {
+        return failedTransactions;
+    }
+
+    public void setFailedTransactions (Integer failedTransactions) {
+        this.failedTransactions = failedTransactions;
+    }
+
+    public Integer getNoOfUsers () {
+        return noOfUsers;
+    }
+
+    public void setNoOfUsers (Integer noOfUsers) {
+        this.noOfUsers = noOfUsers;
+    }
+
+    public Integer getNoOfBlockedUsers () {
+        return noOfBlockedUsers;
+    }
+
+    public void setNoOfBlockedUsers (Integer noOfBlockedUsers) {
+        this.noOfBlockedUsers = noOfBlockedUsers;
+    }
+
+    public Date getStatsDate () {
+        return statsDate;
+    }
+
+    public void setStatsDate (Date statsDate) {
+        this.statsDate = statsDate;
+    }
 }

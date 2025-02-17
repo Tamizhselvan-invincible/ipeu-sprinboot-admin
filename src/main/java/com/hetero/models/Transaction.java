@@ -10,11 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.math.BigDecimal;
 import java.util.Date;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
+
 @Entity
 @Table(name = "transactions")
 public class Transaction {
@@ -68,4 +64,136 @@ public class Transaction {
 
     @Column(name = "transaction_reference")
     private String transactionReference;
+
+    public Transaction () {
+    }
+
+    public Transaction (Long id, Long aggregatedTransactionId, TransactionStatus status, BigDecimal cashBack, boolean isDeleted, Integer userId, Long transactionTakenTime, SubscriptionPlan subscriptionPlan, BigDecimal amount, Platform platformType, PaymentMethod paymentMethod, Date dateCreated, Date deletedAt, String transactionReference) {
+        this.id = id;
+        this.aggregatedTransactionId = aggregatedTransactionId;
+        this.status = status;
+        this.cashBack = cashBack;
+        this.isDeleted = isDeleted;
+        this.userId = userId;
+        this.transactionTakenTime = transactionTakenTime;
+        this.subscriptionPlan = subscriptionPlan;
+        this.amount = amount;
+        this.platformType = platformType;
+        this.paymentMethod = paymentMethod;
+        this.dateCreated = dateCreated;
+        this.deletedAt = deletedAt;
+        this.transactionReference = transactionReference;
+    }
+
+    public Long getId () {
+        return id;
+    }
+
+    public void setId (Long id) {
+        this.id = id;
+    }
+
+    public Long getAggregatedTransactionId () {
+        return aggregatedTransactionId;
+    }
+
+    public void setAggregatedTransactionId (Long aggregatedTransactionId) {
+        this.aggregatedTransactionId = aggregatedTransactionId;
+    }
+
+    public TransactionStatus getStatus () {
+        return status;
+    }
+
+    public void setStatus (TransactionStatus status) {
+        this.status = status;
+    }
+
+    public BigDecimal getCashBack () {
+        return cashBack;
+    }
+
+    public void setCashBack (BigDecimal cashBack) {
+        this.cashBack = cashBack;
+    }
+
+    public boolean isDeleted () {
+        return isDeleted;
+    }
+
+    public void setDeleted (boolean deleted) {
+        isDeleted = deleted;
+    }
+
+    public Integer getUserId () {
+        return userId;
+    }
+
+    public void setUserId (Integer userId) {
+        this.userId = userId;
+    }
+
+    public Long getTransactionTakenTime () {
+        return transactionTakenTime;
+    }
+
+    public void setTransactionTakenTime (Long transactionTakenTime) {
+        this.transactionTakenTime = transactionTakenTime;
+    }
+
+    public SubscriptionPlan getSubscriptionPlan () {
+        return subscriptionPlan;
+    }
+
+    public void setSubscriptionPlan (SubscriptionPlan subscriptionPlan) {
+        this.subscriptionPlan = subscriptionPlan;
+    }
+
+    public @NotNull BigDecimal getAmount () {
+        return amount;
+    }
+
+    public void setAmount (@NotNull BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public Platform getPlatformType () {
+        return platformType;
+    }
+
+    public void setPlatformType (Platform platformType) {
+        this.platformType = platformType;
+    }
+
+    public PaymentMethod getPaymentMethod () {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod (PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public Date getDateCreated () {
+        return dateCreated;
+    }
+
+    public void setDateCreated (Date dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
+    public Date getDeletedAt () {
+        return deletedAt;
+    }
+
+    public void setDeletedAt (Date deletedAt) {
+        this.deletedAt = deletedAt;
+    }
+
+    public String getTransactionReference () {
+        return transactionReference;
+    }
+
+    public void setTransactionReference (String transactionReference) {
+        this.transactionReference = transactionReference;
+    }
 }

@@ -8,11 +8,15 @@ import com.hetero.service.LedgerService;
 import com.hetero.service.LedgerServiceImpl;
 import com.hetero.service.UserService;
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
+
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.util.ConcurrentModificationException;
 import java.util.List;
@@ -20,9 +24,9 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
-@Slf4j
 @CrossOrigin(origins = "https://moving-raccoon-fleet.ngrok-free.app")
 public class UserController {
+    private static final Logger log = LogManager.getLogger(UserController.class);
     @Autowired
     private UserService userService;
 
@@ -48,6 +52,8 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
         } catch (ConcurrentModificationException e) {
             log.error("Failed to update ledger for new user: {}", savedUser.getId(), e);
+
+
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }

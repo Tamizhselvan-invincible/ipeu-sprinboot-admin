@@ -14,12 +14,7 @@ import java.util.Date;
 import java.util.List;
 
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@Data
 @Table(name = "users")
 public class User {
     @Id
@@ -103,4 +98,199 @@ public class User {
     @JsonIgnore
     @JsonManagedReference
     private List<Transaction> transactions = new ArrayList<>();
+
+    public User () {
+    }
+
+    public User (Integer id, String firstName, String lastName, String email, String mobileNo, String mPin, String profilePicture, boolean isBlocked, AccountStatus accountStatus, Date dateCreated, Date dateUpdated, Platform platformType, Date deletedAt, String appVersion, LocalDateTime lastLoginTime, Role userRole, Date appUpdatedAt, String deviceBrandName, String deviceVersionCode, String osType, List<Transaction> transactions) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.mobileNo = mobileNo;
+        this.mPin = mPin;
+        this.profilePicture = profilePicture;
+        this.isBlocked = isBlocked;
+        this.accountStatus = accountStatus;
+        this.dateCreated = dateCreated;
+        this.dateUpdated = dateUpdated;
+        this.platformType = platformType;
+        this.deletedAt = deletedAt;
+        this.appVersion = appVersion;
+        this.lastLoginTime = lastLoginTime;
+        this.userRole = userRole;
+        this.appUpdatedAt = appUpdatedAt;
+        this.deviceBrandName = deviceBrandName;
+        this.deviceVersionCode = deviceVersionCode;
+        this.osType = osType;
+        this.transactions = transactions;
+    }
+
+    public Integer getId () {
+        return id;
+    }
+
+    public void setId (Integer id) {
+        this.id = id;
+    }
+
+    public @NotNull(message = "First Name cannot be NULL") @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter valid characters in first name") String getFirstName () {
+        return firstName;
+    }
+
+    public void setFirstName (@NotNull(message = "First Name cannot be NULL") @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter valid characters in first name") String firstName) {
+        this.firstName = firstName;
+    }
+
+    public @NotNull(message = "Last Name cannot be NULL") @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter valid characters in last name") String getLastName () {
+        return lastName;
+    }
+
+    public void setLastName (@NotNull(message = "Last Name cannot be NULL") @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter valid characters in last name") String lastName) {
+        this.lastName = lastName;
+    }
+
+    public @Email(message = "Please provide a valid email address") String getEmail () {
+        return email;
+    }
+
+    public void setEmail (@Email(message = "Please provide a valid email address") String email) {
+        this.email = email;
+    }
+
+    public @NotNull(message = "Mobile number cannot be NULL") @Pattern(regexp = "[6789]{1}[0-9]{9}", message = "Enter valid 10 digit mobile number") String getMobileNo () {
+        return mobileNo;
+    }
+
+    public void setMobileNo (@NotNull(message = "Mobile number cannot be NULL") @Pattern(regexp = "[6789]{1}[0-9]{9}", message = "Enter valid 10 digit mobile number") String mobileNo) {
+        this.mobileNo = mobileNo;
+    }
+
+    public @NotNull(message = "M-PIN cannot be null") @Size(min = 4, max = 6, message = "M-PIN must be between 4 and 6 digits") String getmPin () {
+        return mPin;
+    }
+
+    public void setmPin (@NotNull(message = "M-PIN cannot be null") @Size(min = 4, max = 6, message = "M-PIN must be between 4 and 6 digits") String mPin) {
+        this.mPin = mPin;
+    }
+
+    public String getProfilePicture () {
+        return profilePicture;
+    }
+
+    public void setProfilePicture (String profilePicture) {
+        this.profilePicture = profilePicture;
+    }
+
+    public boolean isBlocked () {
+        return isBlocked;
+    }
+
+    public void setBlocked (boolean blocked) {
+        isBlocked = blocked;
+    }
+
+    public AccountStatus getAccountStatus () {
+        return accountStatus;
+    }
+
+    public void setAccountStatus (AccountStatus accountStatus) {
+        this.accountStatus = accountStatus;
+    }
+
+    public Date getDateCreated () {
+        return dateCreated;
+    }
+
+    public void setDateCreated (Date dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
+    public Date getDateUpdated () {
+        return dateUpdated;
+    }
+
+    public void setDateUpdated (Date dateUpdated) {
+        this.dateUpdated = dateUpdated;
+    }
+
+    public Platform getPlatformType () {
+        return platformType;
+    }
+
+    public void setPlatformType (Platform platformType) {
+        this.platformType = platformType;
+    }
+
+    public Date getDeletedAt () {
+        return deletedAt;
+    }
+
+    public void setDeletedAt (Date deletedAt) {
+        this.deletedAt = deletedAt;
+    }
+
+    public String getAppVersion () {
+        return appVersion;
+    }
+
+    public void setAppVersion (String appVersion) {
+        this.appVersion = appVersion;
+    }
+
+    public LocalDateTime getLastLoginTime () {
+        return lastLoginTime;
+    }
+
+    public void setLastLoginTime (LocalDateTime lastLoginTime) {
+        this.lastLoginTime = lastLoginTime;
+    }
+
+    public Role getUserRole () {
+        return userRole;
+    }
+
+    public void setUserRole (Role userRole) {
+        this.userRole = userRole;
+    }
+
+    public Date getAppUpdatedAt () {
+        return appUpdatedAt;
+    }
+
+    public void setAppUpdatedAt (Date appUpdatedAt) {
+        this.appUpdatedAt = appUpdatedAt;
+    }
+
+    public String getDeviceBrandName () {
+        return deviceBrandName;
+    }
+
+    public void setDeviceBrandName (String deviceBrandName) {
+        this.deviceBrandName = deviceBrandName;
+    }
+
+    public String getDeviceVersionCode () {
+        return deviceVersionCode;
+    }
+
+    public void setDeviceVersionCode (String deviceVersionCode) {
+        this.deviceVersionCode = deviceVersionCode;
+    }
+
+    public String getOsType () {
+        return osType;
+    }
+
+    public void setOsType (String osType) {
+        this.osType = osType;
+    }
+
+    public List<Transaction> getTransactions () {
+        return transactions;
+    }
+
+    public void setTransactions (List<Transaction> transactions) {
+        this.transactions = transactions;
+    }
 }

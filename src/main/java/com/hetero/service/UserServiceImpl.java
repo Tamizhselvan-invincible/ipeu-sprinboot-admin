@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserService {
         if (newUser.getLastName() != null) existingUser.setLastName(newUser.getLastName());
         if (newUser.getEmail() != null) existingUser.setEmail(newUser.getEmail());
         if (newUser.getMobileNo() != null) existingUser.setMobileNo(newUser.getMobileNo());
-        if (newUser.getMPin() != null) existingUser.setMPin(newUser.getMPin());
+        if (newUser.getmPin() != null) existingUser.setmPin(newUser.getmPin());
         if (newUser.getProfilePicture() != null) existingUser.setProfilePicture(newUser.getProfilePicture());
         if (newUser.getAccountStatus() != null) existingUser.setAccountStatus(newUser.getAccountStatus());
         if (newUser.getAppVersion() != null) existingUser.setAppVersion(newUser.getAppVersion());

@@ -9,12 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.math.BigDecimal;
 import java.util.Date;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
 @Entity
-@Getter
-@Setter
 @Table(name = "subscription_plans")
 public class SubscriptionPlan {
     @Id
@@ -54,4 +49,108 @@ public class SubscriptionPlan {
     @CreationTimestamp
     private Date dateCreated;
 
+    public SubscriptionPlan () {
+    }
+
+    public SubscriptionPlan (Long id, String name, String operator, BigDecimal amount, Integer validity, String dataLimit, String callBenefits, String smsBenefits, String description, boolean isActive, Date dateCreated) {
+        this.id = id;
+        this.name = name;
+        this.operator = operator;
+        this.amount = amount;
+        this.validity = validity;
+        this.dataLimit = dataLimit;
+        this.callBenefits = callBenefits;
+        this.smsBenefits = smsBenefits;
+        this.description = description;
+        this.isActive = isActive;
+        this.dateCreated = dateCreated;
+    }
+
+    public Long getId () {
+        return id;
+    }
+
+    public void setId (Long id) {
+        this.id = id;
+    }
+
+    public @NotBlank(message = "Plan name is required") String getName () {
+        return name;
+    }
+
+    public void setName (@NotBlank(message = "Plan name is required") String name) {
+        this.name = name;
+    }
+
+    public @NotBlank(message = "Operator name is required") String getOperator () {
+        return operator;
+    }
+
+    public void setOperator (@NotBlank(message = "Operator name is required") String operator) {
+        this.operator = operator;
+    }
+
+    public @NotNull(message = "Amount is required") BigDecimal getAmount () {
+        return amount;
+    }
+
+    public void setAmount (@NotNull(message = "Amount is required") BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public @NotNull(message = "Validity is required") Integer getValidity () {
+        return validity;
+    }
+
+    public void setValidity (@NotNull(message = "Validity is required") Integer validity) {
+        this.validity = validity;
+    }
+
+    public String getDataLimit () {
+        return dataLimit;
+    }
+
+    public void setDataLimit (String dataLimit) {
+        this.dataLimit = dataLimit;
+    }
+
+    public String getCallBenefits () {
+        return callBenefits;
+    }
+
+    public void setCallBenefits (String callBenefits) {
+        this.callBenefits = callBenefits;
+    }
+
+    public String getSmsBenefits () {
+        return smsBenefits;
+    }
+
+    public void setSmsBenefits (String smsBenefits) {
+        this.smsBenefits = smsBenefits;
+    }
+
+    public String getDescription () {
+        return description;
+    }
+
+    public void setDescription (String description) {
+        this.description = description;
+    }
+
+    public boolean isActive () {
+        return isActive;
+    }
+
+    public void setActive (boolean active) {
+        isActive = active;
+    }
+
+    public Date getDateCreated () {
+        return dateCreated;
+    }
+
+    public void setDateCreated (Date dateCreated) {
+        this.dateCreated = dateCreated;
+    }
 }
