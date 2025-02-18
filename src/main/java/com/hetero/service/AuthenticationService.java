@@ -71,7 +71,6 @@ public class AuthenticationService {
         if (request.getLastName() != null) user.setLastName(request.getLastName());
         if (request.getEmail() != null) user.setEmail(request.getEmail());
         if (request.getMobileNo() != null) user.setMobileNo(request.getMobileNo());
-        if (request.getmPin() != null) user.setmPin(request.getmPin());
         if (request.getProfilePicture() != null) user.setProfilePicture(request.getProfilePicture());
         if (request.getAccountStatus() != null) user.setAccountStatus(request.getAccountStatus());
         if (request.getAppVersion() != null) user.setAppVersion(request.getAppVersion());
