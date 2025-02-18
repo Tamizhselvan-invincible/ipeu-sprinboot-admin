@@ -1,6 +1,5 @@
 package com.hetero.models;
 
-
 import jakarta.persistence.*;
 
 @Entity
