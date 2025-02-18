@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
-import java.util.Optional;
 
 
 @Slf4j
@@ -62,15 +61,17 @@ public class LedgerServiceImpl implements LedgerService {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Transactional(isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
     public Ledger updateLedgerWithRetry(TransactionUpdate update) {
-        for (int attempt = 0; attempt < RETRY_ATTEMPTS; attempt++) {
+        int attempt = 0;
+        while (attempt < RETRY_ATTEMPTS) {
             try {
                 return doUpdateLedger(update);
             } catch (ObjectOptimisticLockingFailureException e) {
-                if (attempt == RETRY_ATTEMPTS - 1) {
+                attempt++;
+                if (attempt == RETRY_ATTEMPTS) {
                     throw new ConcurrentModificationException("Failed to update ledger after " + RETRY_ATTEMPTS + " attempts");
                 }
                 try {
-                    Thread.sleep(RETRY_DELAY_MS * (attempt + 1));
+                    Thread.sleep(RETRY_DELAY_MS * attempt);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                     throw new RuntimeException("Thread interrupted during retry", ie);

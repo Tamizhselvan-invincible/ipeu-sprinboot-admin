@@ -1,5 +1,5 @@
 package com.hetero.models;
 
 public enum Role {
-    admin,user,provider
+    ADMIN,USER,PROVIDER
 }

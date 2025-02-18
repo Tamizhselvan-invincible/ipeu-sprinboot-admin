@@ -58,6 +58,7 @@ public class UserController {
         }
     }
 
+
     @PostMapping("/block")
     public ResponseEntity<?> blockUser(@RequestParam Integer userId) {
         User user = userService.getUser(userId);

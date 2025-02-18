@@ -2,8 +2,10 @@ package com.hetero.service;
 
 import com.hetero.exception.UserNotFoundException;
 import com.hetero.models.Platform;
+import com.hetero.models.Token;
 import com.hetero.models.Transaction;
 import com.hetero.models.User;
+import com.hetero.repository.TokenDao;
 import com.hetero.repository.TransactionDao;
 import com.hetero.repository.UserDao;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     TransactionDao transactionDao;
+
+    @Autowired
+    TokenDao tokenDao;
 
     @Transactional
     @Override
@@ -106,6 +111,7 @@ public class UserServiceImpl implements UserService {
         if (newUser.getDeviceBrandName() != null) existingUser.setDeviceBrandName(newUser.getDeviceBrandName());
         if (newUser.getDeviceVersionCode() != null) existingUser.setDeviceVersionCode(newUser.getDeviceVersionCode());
         if (newUser.getOsType() != null) existingUser.setOsType(newUser.getOsType());
+        if(newUser.getTokens() != null) existingUser.setTokens(newUser.getTokens());
 
         // Handle boolean field updates
         existingUser.setBlocked(newUser.isBlocked());
@@ -138,6 +144,9 @@ public class UserServiceImpl implements UserService {
             throw new UserNotFoundException("User with ID " + id + " not found");
         }else {
             User user = optionalUser.get();
+
+            tokenDao.deleteAll(user.getTokens());
+
             userDao.delete(user);
             return "User with ID " + id + " deleted";
         }

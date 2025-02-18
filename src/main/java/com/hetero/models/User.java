@@ -3,20 +3,24 @@ package com.hetero.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.*;
 import jakarta.validation.constraints.*;
 import jakarta.validation.constraints.Pattern;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -41,8 +45,7 @@ public class User {
     private String mobileNo;
 
     @NotNull(message = "M-PIN cannot be null")
-    @Column(name = "m_pin")
-    @Size(min = 4, max = 6, message = "M-PIN must be between 4 and 6 digits")
+    @Column(name = "m_pin", length = 100)
     private String mPin;
 
     @Column(name = "profile_picture")
@@ -99,10 +102,16 @@ public class User {
     @JsonManagedReference
     private List<Transaction> transactions = new ArrayList<>();
 
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Token> tokens;
+
+
     public User () {
     }
 
-    public User (Integer id, String firstName, String lastName, String email, String mobileNo, String mPin, String profilePicture, boolean isBlocked, AccountStatus accountStatus, Date dateCreated, Date dateUpdated, Platform platformType, Date deletedAt, String appVersion, LocalDateTime lastLoginTime, Role userRole, Date appUpdatedAt, String deviceBrandName, String deviceVersionCode, String osType, List<Transaction> transactions) {
+    public User (Integer id, String firstName, String lastName, String email, String mobileNo, String mPin, String profilePicture, boolean isBlocked, AccountStatus accountStatus, Date dateCreated, Date dateUpdated, Platform platformType, Date deletedAt, String appVersion, LocalDateTime lastLoginTime, Role userRole, Date appUpdatedAt, String deviceBrandName, String deviceVersionCode, String osType, List<Transaction> transactions, List<Token> tokens) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -124,6 +133,7 @@ public class User {
         this.deviceVersionCode = deviceVersionCode;
         this.osType = osType;
         this.transactions = transactions;
+        this.tokens = tokens;
     }
 
     public Integer getId () {
@@ -166,11 +176,11 @@ public class User {
         this.mobileNo = mobileNo;
     }
 
-    public @NotNull(message = "M-PIN cannot be null") @Size(min = 4, max = 6, message = "M-PIN must be between 4 and 6 digits") String getmPin () {
+    public @NotNull(message = "M-PIN cannot be null")  String getmPin () {
         return mPin;
     }
 
-    public void setmPin (@NotNull(message = "M-PIN cannot be null") @Size(min = 4, max = 6, message = "M-PIN must be between 4 and 6 digits") String mPin) {
+    public void setmPin (@NotNull(message = "M-PIN cannot be null")  String mPin) {
         this.mPin = mPin;
     }
 
@@ -293,4 +303,36 @@ public class User {
     public void setTransactions (List<Transaction> transactions) {
         this.transactions = transactions;
     }
+
+    public List<Token> getTokens() {
+        return tokens;
+    }
+
+    public void setTokens(List<Token> tokens) {
+        this.tokens = tokens;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities () {
+        return List.of(new SimpleGrantedAuthority(userRole.name()));
+    }
+
+    @Override
+    public String getPassword () {
+        return mPin;
+    }
+
+    public String setPassword (String password) {
+        return this.mPin = password;
+    }
+
+    @Override
+    public String getUsername () {
+        return mobileNo;
+    }
+
+    public String setUsername(String username) {
+        return this.mobileNo = username;
+    }
+
 }
