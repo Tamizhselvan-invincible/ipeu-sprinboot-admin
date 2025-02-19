@@ -82,6 +82,7 @@ public class LedgerServiceImpl implements LedgerService {
     }
 
 
+
     @Transactional(propagation = Propagation.MANDATORY)
      Ledger doUpdateLedger(TransactionUpdate update) {
         Ledger ledger = ledgerDao.findFirstByOrderByIdAsc()
@@ -110,12 +111,13 @@ public class LedgerServiceImpl implements LedgerService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     protected void handleTransactionDeletion(Ledger ledger, Transaction oldTransaction) {
-        ledger.setTotalAmount(ledger.getTotalAmount().subtract(oldTransaction.getAmount()));
+        BigDecimal transactionAmount = new BigDecimal(String.valueOf(oldTransaction.getAmount()));
+        ledger.setTotalAmount(ledger.getTotalAmount().subtract(transactionAmount));
         ledger.setTotalTransactions(ledger.getTotalTransactions() - 1);
 
         if (oldTransaction.getStatus() == TransactionStatus.Failed) {
             ledger.setTotalFailedAmount(ledger.getTotalFailedAmount()
-                    .subtract(oldTransaction.getAmount()));
+                    .subtract(transactionAmount));
             ledger.setFailedTransactions(ledger.getFailedTransactions() - 1);
         }
     }
@@ -123,21 +125,23 @@ public class LedgerServiceImpl implements LedgerService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     protected void handleTransactionUpdate(Ledger ledger, Transaction newTransaction,
                                          Transaction oldTransaction) {
+        BigDecimal oldTransactionAmount = new BigDecimal(String.valueOf(oldTransaction.getAmount()));
+        BigDecimal newTransactionAmount = new BigDecimal(String.valueOf(newTransaction.getAmount()));
         // Update total amount
         ledger.setTotalAmount(ledger.getTotalAmount()
-                .subtract(oldTransaction.getAmount())
-                .add(newTransaction.getAmount()));
+                .subtract(oldTransactionAmount)
+                .add(newTransactionAmount));
 
         // Handle failed transaction status changes
         if (oldTransaction.getStatus() == TransactionStatus.Failed) {
             ledger.setTotalFailedAmount(ledger.getTotalFailedAmount()
-                    .subtract(oldTransaction.getAmount()));
+                    .subtract(oldTransactionAmount));
             ledger.setFailedTransactions(ledger.getFailedTransactions() - 1);
         }
 
         if (newTransaction.getStatus() == TransactionStatus.Failed) {
             ledger.setTotalFailedAmount(ledger.getTotalFailedAmount()
-                    .add(newTransaction.getAmount()));
+                    .add(newTransactionAmount));
             ledger.setFailedTransactions(ledger.getFailedTransactions() + 1);
         }
     }
@@ -145,12 +149,13 @@ public class LedgerServiceImpl implements LedgerService {
 
 @Transactional
 protected void handleNewTransaction(Ledger ledger, Transaction transaction) {
-        ledger.setTotalAmount(ledger.getTotalAmount().add(transaction.getAmount()));
+    BigDecimal transactionAmount = new BigDecimal(String.valueOf(transaction.getAmount()));
+        ledger.setTotalAmount(ledger.getTotalAmount().add(transactionAmount));
         ledger.setTotalTransactions(ledger.getTotalTransactions() + 1);
 
         if (transaction.getStatus() == TransactionStatus.Failed) {
             ledger.setTotalFailedAmount(ledger.getTotalFailedAmount()
-                    .add(transaction.getAmount()));
+                    .add(transactionAmount));
             ledger.setFailedTransactions(ledger.getFailedTransactions() + 1);
         }
     }
@@ -236,21 +241,7 @@ protected void handleNewTransaction(Ledger ledger, Transaction transaction) {
         return ledgerDao.save(newLedger);
 
      }
-
-
-    private Ledger createInitialLedger() {
-        Ledger ledger = new Ledger();
-        ledger.setId(1L);
-        ledger.setFailedTransactions(0);
-        ledger.setTotalTransactions(0);
-        ledger.setTotalAmount(BigDecimal.ZERO);
-        ledger.setTotalFailedAmount(BigDecimal.ZERO);
-        ledger.setNoOfUsers(0);
-        ledger.setNoOfBlockedUsers(0);
-        ledger.setStatsDate(new Date());
-        ledger.setVersion(1);
-       return ledgerDao.save(ledger);
-    }
+     
 
 }
 

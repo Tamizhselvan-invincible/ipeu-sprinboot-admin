@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Access Denied</title>
+    <style>
+        body {
+            font-size: 50pt;
+            padding: 10px;
+            background-color: rgb(30, 33, 37);
+            font-family: monospace;
+            text-align: center;
+            color: #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+        }
+        section p,
+        span {
+            margin: 0;
+            padding: 0;
+            font-size: 15px;
+            font-style: italic;
+            font-weight: 300;
+            line-height: 25px;
+            color: #666666;
+        }
+
+        span{
+            font-size: 10pt;
+            color: white;
+        }
+        a{
+            color: white;
+            text-decoration: underline;
+        }
+
+        h3 {
+            font-size: 35px;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+
+<section class="forbidden">
+    <h3>403</h3>
+    <p>You do not have permission to view this directory.</p>
+    <span id='r'>Returning to  <a href="/logout">login page</a></span>
+</section>
+
+</body>
+</html>

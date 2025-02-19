@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -80,7 +81,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         Transaction existingTransaction = transactionDao.findById(id).get();
         if (existingTransaction != null) {
-           existingTransaction.setAmount(transaction.getAmount());
+            existingTransaction.setAmount(transaction.getAmount());
            existingTransaction.setAggregatedTransactionId(transaction.getAggregatedTransactionId());
            existingTransaction.setTransactionReference(transaction.getTransactionReference());
            existingTransaction.setDeleted(transaction.isDeleted());

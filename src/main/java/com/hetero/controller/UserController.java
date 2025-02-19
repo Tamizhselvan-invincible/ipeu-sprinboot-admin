@@ -44,7 +44,7 @@ public class UserController {
                     false,
                     null,
                     new LedgerServiceImpl.UserUpdate(
-                            ledgerService.getLedger().getNoOfUsers() + 1,
+                            Math.max(ledgerService.getLedger().getNoOfUsers() + 1, userService.getAllUsers().size()),
                             user.isBlocked() ? ledgerService.getLedger().getNoOfBlockedUsers() + 1
                                     : ledgerService.getLedger().getNoOfBlockedUsers()
                     )
@@ -121,6 +121,7 @@ public class UserController {
             throw new UserNotFoundException("User with ID " + id + " not found");
         }
 
+
         try {
             ledgerService.updateLedgerWithRetry(new LedgerServiceImpl.TransactionUpdate(
                     LedgerServiceImpl.UpdateType.USER,
@@ -128,7 +129,7 @@ public class UserController {
                     false,
                     null,
                     new LedgerServiceImpl.UserUpdate(
-                            ledgerService.getLedger().getNoOfUsers() - 1,
+                            Math.max(ledgerService.getLedger().getNoOfUsers() - 1, 0),
                             user.isBlocked() ? ledgerService.getLedger().getNoOfBlockedUsers() - 1
                                     : ledgerService.getLedger().getNoOfBlockedUsers()
                     )

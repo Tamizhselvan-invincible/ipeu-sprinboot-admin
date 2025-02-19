@@ -1,13 +1,12 @@
 package com.hetero.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.hetero.security.AESEncryptor;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.math.BigDecimal;
 import java.util.Date;
 
 
@@ -20,22 +19,27 @@ public class Transaction {
     private Long id;
 
     @Column(name = "aggregated_transaction_id")
+    @Convert(converter = AESEncryptor.class)
     private Long aggregatedTransactionId;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
+    @Convert(converter = AESEncryptor.class)
     private TransactionStatus status;
 
     @Column(name = "cashback_amount")
-    private BigDecimal cashBack;
+    @Convert(converter = AESEncryptor.class)
+    private String cashBack;
 
     @Column(name = "is_deleted")
     private boolean isDeleted;
 
     @Column(name = "user_id", nullable = false)
+
     private Integer userId;
 
     @Column(name = "transaction_taken_time")
+    @Convert(converter = AESEncryptor.class)
     private Long transactionTakenTime;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -46,29 +50,34 @@ public class Transaction {
 
     @Column(name = "transaction_amount")
     @NotNull
-    private BigDecimal amount;
+    @Convert(converter = AESEncryptor.class)
+    private String amount;
 
     @Column
     private Platform platformType;
 
     @Column(name = "payment_method")
     @Enumerated(EnumType.STRING)
+    @Convert(converter = AESEncryptor.class)
     private PaymentMethod paymentMethod;
 
     @Column(name = "created_at")
     @CreationTimestamp
+    @Convert(converter = AESEncryptor.class)
     private Date dateCreated;
 
     @Column(name = "deleted_at")
     private Date deletedAt;
 
     @Column(name = "transaction_reference")
+    @Convert(converter = AESEncryptor.class)
     private String transactionReference;
+
 
     public Transaction () {
     }
 
-    public Transaction (Long id, Long aggregatedTransactionId, TransactionStatus status, BigDecimal cashBack, boolean isDeleted, Integer userId, Long transactionTakenTime, SubscriptionPlan subscriptionPlan, BigDecimal amount, Platform platformType, PaymentMethod paymentMethod, Date dateCreated, Date deletedAt, String transactionReference) {
+    public Transaction (Long id, Long aggregatedTransactionId, TransactionStatus status, String cashBack, boolean isDeleted, Integer userId, Long transactionTakenTime, SubscriptionPlan subscriptionPlan, String amount, Platform platformType, PaymentMethod paymentMethod, Date dateCreated, Date deletedAt, String transactionReference) {
         this.id = id;
         this.aggregatedTransactionId = aggregatedTransactionId;
         this.status = status;
@@ -109,11 +118,11 @@ public class Transaction {
         this.status = status;
     }
 
-    public BigDecimal getCashBack () {
+    public String getCashBack () {
         return cashBack;
     }
 
-    public void setCashBack (BigDecimal cashBack) {
+    public void setCashBack (String cashBack) {
         this.cashBack = cashBack;
     }
 
@@ -149,11 +158,11 @@ public class Transaction {
         this.subscriptionPlan = subscriptionPlan;
     }
 
-    public @NotNull BigDecimal getAmount () {
+    public @NotNull String getAmount () {
         return amount;
     }
 
-    public void setAmount (@NotNull BigDecimal amount) {
+    public void setAmount (@NotNull String amount) {
         this.amount = amount;
     }
 
