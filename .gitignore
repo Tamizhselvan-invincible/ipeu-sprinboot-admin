@@ -34,5 +34,5 @@ build/
 
 #Firebase (Need to Romove this on Production)
 *.json
-.env
+*.env
 
