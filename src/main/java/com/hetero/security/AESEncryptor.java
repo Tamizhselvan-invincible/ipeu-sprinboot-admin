@@ -55,10 +55,16 @@ public class AESEncryptor implements AttributeConverter<Object, String> {
         if(attribute == null) {
             return null;
         }
-        initCipher(Cipher.ENCRYPT_MODE);
-        byte[] bytes = SerializationUtils.serialize(attribute);
-        assert bytes != null;
-        return Base64.getEncoder().encodeToString(getCipher().doFinal(bytes));
+
+        try{
+            initCipher(Cipher.ENCRYPT_MODE);
+            byte[] bytes = SerializationUtils.serialize(attribute);
+            assert bytes != null;
+            return Base64.getEncoder().encodeToString(getCipher().doFinal(bytes));
+        } catch (Exception e) {
+            throw new RuntimeException("Error encrypting data ",e);
+        }
+
     }
 
     @SneakyThrows
@@ -67,10 +73,12 @@ public class AESEncryptor implements AttributeConverter<Object, String> {
         if (dbData == null) {
             return null;
         }
-        initCipher(Cipher.DECRYPT_MODE);
-        byte[] bytes = getCipher().doFinal(Base64.getDecoder().decode(dbData));
-
-   return SerializationUtils.deserialize(bytes);
-
+        try{
+            initCipher(Cipher.DECRYPT_MODE);
+            byte[] bytes = getCipher().doFinal(Base64.getDecoder().decode(dbData));
+            return SerializationUtils.deserialize(bytes);
+        } catch (Exception e) {
+            throw new RuntimeException("Error decrypting data ",e);
+        }
     }
 }
