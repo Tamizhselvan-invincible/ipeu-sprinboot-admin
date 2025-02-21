@@ -23,6 +23,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 @Service
@@ -53,7 +55,7 @@ public class BusTicketBookingService {
                 .url(baseUrl+"/service-api/api/v1/service/bus/ticket/source")
                 .post(emptyBody)
                 .addHeader("accept", "application/json")
-                .addHeader("Token", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJQU1BSSU5UIiwidGltZXN0YW1wIjoxNzQwMDQ3NTM2LCJwYXJ0bmVySWQiOiJQUzAwMTk0MyIsInByb2R1Y3QiOiJCVVNUSUNLRVQiLCJyZXFpZCI6NTM5MzE2ODI3fQ.56KWHj3UsuNYJzoNj_LyPrlrOFoY_Y_jeAzYs0UMfFo")
+                .addHeader("Token", Token)
                 .addHeader("Authorisedkey", authorizedKey)
                 .build();
 
@@ -68,6 +70,43 @@ public class BusTicketBookingService {
         }
 
     }
+
+    public String getAvailableTrips(int sourceId, int destinationId, String date) throws IOException {
+
+        String Token = paySprintJWTGenerator.getToken();
+        OkHttpClient client = okHttpClientProvider.getClient();
+
+        MediaType mediaType = MediaType.parse("application/json");
+
+        String jsonBody = String.format("{\"source_id\":%d,\"destination_id\":%d,\"date_of_journey\":\"%s\"}",
+                sourceId, destinationId, date);
+
+        RequestBody requestBody = RequestBody.create(mediaType, jsonBody);
+
+        Request request = new Request.Builder()
+                .url(baseUrl+"/service-api/api/v1/service/bus/ticket/availabletrips")
+                .post(requestBody)
+                .addHeader("accept", "application/json")
+                .addHeader("Token", Token)
+                .addHeader("Authorisedkey", authorizedKey)
+                .addHeader("content-type", "application/json")
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                log.error("Unexpected code: " + response);
+                throw new Exception("Unexpected code: " + response);
+            }
+            return response.body().string();
+        } catch (Exception e) {
+            log.error("Error fetching available Trips: ", e);
+            return e.getMessage(); // Return empty JSON to prevent null errors
+        }
+    }
+
+
+
+
 
 
 }

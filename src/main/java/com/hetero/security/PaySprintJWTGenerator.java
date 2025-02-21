@@ -15,7 +15,7 @@ public class PaySprintJWTGenerator {
 //        System.out.println("Token is : "+ paySprintJWTGenerator.jwtSecretKey);
 //    }
 
-    @Value("${application.security.jwt.secret-key}")
+    @Value("${application.pay-sprint.jwt.secret-key}")
     private String jwtSecretKey;
 
     @Value("${application.pay-sprint.partner-id}")
