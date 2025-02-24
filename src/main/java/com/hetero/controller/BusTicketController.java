@@ -29,6 +29,12 @@ public class BusTicketController {
     @Autowired
     private BusTicketBookingService busTicketBookingService;
 
+
+    @GetMapping("/cities")
+    public ResponseEntity<List<City>> getCitiesFromService() {
+        return ResponseEntity.ok(cityService.getCities());
+    }
+
     @PostMapping("/cities/save")
     public ResponseEntity<?> saveCities() {
         String response = busTicketBookingService.getSourceCities();
@@ -36,11 +42,6 @@ public class BusTicketController {
             cityService.saveCitiesFromJson(response);
             return ResponseEntity.ok("Cities saved successfully!");
         });
-    }
-
-        @GetMapping("/cities")
-    public ResponseEntity<List<City>> getCities() {
-        return ResponseEntity.ok(cityService.getCities());
     }
 
     @PostMapping("/availabletrips")
@@ -52,37 +53,58 @@ public class BusTicketController {
     }
 
     @PostMapping("/tripdetails")
-    public ResponseEntity<?> getTripDetails(@RequestParam Long tripId) {
+    public ResponseEntity<?> getTripDetailsFromService(@RequestParam Long tripId) {
         String response = busTicketBookingService.getCurrentTripDetails(tripId);
         return handleApiResponse(response);
     }
 
     @PostMapping("/boardingDetails")
-    public ResponseEntity<?> getBoardingDetails(@RequestParam Long boardingId, @RequestParam Long tripId) {
+    public ResponseEntity<?> getBoardingDetailsFromService(@RequestParam Long boardingId, @RequestParam Long tripId) {
         String response = busTicketBookingService.getBoardingPointDetails(boardingId, tripId);
         return handleApiResponse(response);
     }
 
     @PostMapping("/block-ticket")
-    public ResponseEntity<?> blockTicket(@RequestBody BlockTicketRequest request) throws JsonProcessingException {
+    public ResponseEntity<?> blockTicketFromService(@RequestBody BlockTicketRequest request) throws JsonProcessingException {
         String response = busTicketBookingService.blockTicket(request);
         return handleApiResponse(response);
     }
 
     @PostMapping("/book-ticket")
-    public ResponseEntity<?> bookTicket(@RequestParam Long refId, @RequestParam Long amount) {
+    public ResponseEntity<?> bookTicketFromService(@RequestParam Long refId, @RequestParam Long amount) {
         String response = busTicketBookingService.bookTicket(refId, amount);
+        return handleApiResponse(response);
+    }
+    @PostMapping("/check-booked-ticket")
+    public ResponseEntity<?> checkBookedTicketFromService(@RequestParam Long refId) {
+        String response = busTicketBookingService.checkBookedTicket(refId);
+        return handleApiResponse(response);
+    }
+    @PostMapping("/get-booked-ticket")
+    public ResponseEntity<?> getBookedTicketFromService(@RequestParam Long refId) {
+        String response = busTicketBookingService.getBookedTicket(refId);
+        return handleApiResponse(response);
+    }
+
+    @PostMapping("/cancellation-ticket-data")
+    public ResponseEntity<?> getCancellationTicketDataFromService(
+            @RequestParam Long refId,
+            @RequestBody Map<Integer, String> seatsToCancel) {
+
+        String response = busTicketBookingService.getCancellationTicketData(refId);
         return handleApiResponse(response);
     }
 
     @PostMapping("/cancel-ticket")
-    public ResponseEntity<?> cancelTicket(
+    public ResponseEntity<?> cancelTicketFromService(
             @RequestParam Long refId,
             @RequestBody Map<Integer, String> seatsToCancel) {
 
         String response = busTicketBookingService.cancelTicket(refId, seatsToCancel);
         return handleApiResponse(response);
     }
+
+
 
 
     private ResponseEntity<?> handleApiResponse(String response) {

@@ -20,6 +20,15 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 
+/**
+ *  If you want to modify the username password change the Email and mPin in Users Model
+ *
+ *  Also made change in Authentication Service findByEmail(request.getUsername()).isPresent()
+ *
+ *  and modify loadByUser in  JwtAuthenticationFilter
+ *
+ */
+
 @Service
 public class AuthenticationService {
 

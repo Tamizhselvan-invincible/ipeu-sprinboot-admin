@@ -129,6 +129,7 @@ public class BusTicketBookingService {
     /**
      * Check the status of a booked ticket
      */
+
     public String checkBookedTicket(Long refId) {
         String jsonBody = String.format("{\"ref_id\":%d}", refId);
         return makeApiCall("/service-api/api/v1/service/bus/ticket/check_booked_ticket", jsonBody);
