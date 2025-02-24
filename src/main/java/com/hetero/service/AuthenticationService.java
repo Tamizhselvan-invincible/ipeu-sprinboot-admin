@@ -29,10 +29,13 @@ public class AuthenticationService {
     @Autowired
     private final PasswordEncoder passwordEncoder;
 
+    @Autowired
     private final JwtService jwtService;
 
+    @Autowired
     private final TokenDao tokenRepository;
 
+    @Autowired
     private final AuthenticationManager authenticationManager;
 
     public AuthenticationService(UserDao repository,
@@ -53,23 +56,22 @@ public class AuthenticationService {
             throw new IllegalArgumentException("M-PIN cannot be null or empty");
         }
         if (request.getUsername() == null || request.getUsername().isEmpty()) {
-            throw new IllegalArgumentException("Mobile Number cannot be null or empty");
+            throw new IllegalArgumentException("Email cannot be null or empty");
         }
 
 
         // check if user already exist. if exist than authenticate the user
-        if(userDao.findByMobileNo(request.getUsername()).isPresent()) {
+        if(userDao.findByEmail(request.getUsername()).isPresent()) {
             return new AuthenticationResponse(null, null,"User already exist");
         }
 
         User user = new User();
+        user.setEmail(request.getEmail());
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setUserRole(request.getUserRole());
 
-         if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
+        if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
         if (request.getLastName() != null) user.setLastName(request.getLastName());
-        if (request.getEmail() != null) user.setEmail(request.getEmail());
         if (request.getMobileNo() != null) user.setMobileNo(request.getMobileNo());
         if (request.getProfilePicture() != null) user.setProfilePicture(request.getProfilePicture());
         if (request.getAccountStatus() != null) user.setAccountStatus(request.getAccountStatus());
@@ -102,7 +104,7 @@ public class AuthenticationService {
 
     }
 
-    public AuthenticationResponse authenticate(User request) {
+    public AuthenticationResponse authenticate(User request) throws RuntimeException{
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
@@ -110,7 +112,7 @@ public class AuthenticationService {
                 )
         );
 
-        User user = userDao.findByMobileNo(request.getUsername()).orElseThrow();
+        User user = userDao.findByEmail(request.getUsername()).orElseThrow(()->new RuntimeException("No user found"));
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
@@ -157,7 +159,7 @@ public class AuthenticationService {
         String username = jwtService.extractUsername(token);
 
         // check if the user exist in database
-        User user = userDao.findByMobileNo(username)
+        User user = userDao.findByEmail(username)
                 .orElseThrow(()->new RuntimeException("No user found"));
 
         // check if the token is valid

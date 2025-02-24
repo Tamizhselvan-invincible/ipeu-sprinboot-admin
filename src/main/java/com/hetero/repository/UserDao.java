@@ -27,6 +27,9 @@ public interface UserDao extends JpaRepository<User, Integer> {
     Optional<User> findByMobileNo(String email);
 
 
+    Optional<User> findByEmail(String email);
+
+
     @EntityGraph(attributePaths = "transactions")
     Optional<User> findById(Integer id);
 

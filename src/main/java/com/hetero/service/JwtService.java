@@ -2,6 +2,7 @@ package com.hetero.service;
 
 import com.hetero.models.User;
 import com.hetero.repository.TokenDao;
+import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -39,6 +40,9 @@ public class JwtService {
 
 
     public String extractUsername(String token) {
+        if (token == null || token.trim().isEmpty()) {
+            throw new JwtException("Token is missing");
+        }
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -86,6 +90,9 @@ public class JwtService {
 
     public <T> T extractClaim(String token, Function<Claims, T> resolver) {
         Claims claims = extractAllClaims(token);
+        if (claims == null) {
+            throw new JwtException("Invalid or missing JWT token"); // Handle it properly
+        }
         return resolver.apply(claims);
     }
 
@@ -115,7 +122,7 @@ public class JwtService {
     private String generateToken(User user, long expireTime) {
         String token = Jwts
                 .builder()
-                .subject(user.getMobileNo())
+                .subject(user.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expireTime ))
                 .signWith(getSigninKey())

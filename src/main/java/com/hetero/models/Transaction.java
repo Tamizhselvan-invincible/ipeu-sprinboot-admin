@@ -1,6 +1,7 @@
 package com.hetero.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hetero.security.AESEncryptor;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -16,6 +17,7 @@ public class Transaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
     @Column(name = "aggregated_transaction_id")
@@ -54,6 +56,7 @@ public class Transaction {
     private String amount;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private Platform platformType;
 
     @Column(name = "payment_method")

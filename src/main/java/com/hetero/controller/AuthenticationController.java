@@ -5,6 +5,7 @@ import com.hetero.models.User;
 import com.hetero.service.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,7 +23,7 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(
-            @RequestBody User request
+           @Valid @RequestBody User request
             ) {
         if (request.getmPin() == null || request.getmPin().isEmpty()) {
             throw new IllegalArgumentException("M-PIN cannot be null or empty");

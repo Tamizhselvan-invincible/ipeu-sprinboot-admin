@@ -1,5 +1,6 @@
 package com.hetero.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 @Entity
@@ -9,6 +10,7 @@ public class Token {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer id;
 
     @Column(name = "access_token")

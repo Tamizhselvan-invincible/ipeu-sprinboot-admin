@@ -2,6 +2,7 @@ package com.hetero.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import jakarta.validation.constraints.Pattern;
@@ -23,6 +24,7 @@ import java.util.List;
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer id;
 
     @NotNull(message = "First Name cannot be NULL")
@@ -35,17 +37,18 @@ public class User implements UserDetails {
     @Column(name = "last_name", length = 50)
     private String lastName;
 
+    @NotNull(message = "Email cannot be NULL")
     @Email(message = "Please provide a valid email address")
     @Column(unique = true)
     private String email;
 
-    @NotNull(message = "Mobile number cannot be NULL")
     @Pattern(regexp = "[6789]{1}[0-9]{9}", message = "Enter valid 10 digit mobile number")
-    @Column(name = "mobile_number",unique = true)
+    @Column(name = "mobile_number",unique = true,nullable = true)
     private String mobileNo;
 
     @NotNull(message = "M-PIN cannot be null")
     @Column(name = "m_pin", length = 100)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String mPin;
 
     @Column(name = "profile_picture")
@@ -69,6 +72,7 @@ public class User implements UserDetails {
     private Date dateUpdated;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private Platform platformType = Platform.ALL;
 
     @Column(name = "deleted_at",nullable = true)
@@ -107,12 +111,24 @@ public class User implements UserDetails {
     @JsonIgnore
     private List<Token> tokens;
 
+    ///User Details Properties
+    @JsonIgnore
+    private boolean enabled = true;
+
+    @JsonIgnore
+    private boolean credentialsNonExpired = true;
+
+    @JsonIgnore
+    private boolean accountNonExpired = true;
+
+    @JsonIgnore
+    private boolean accountNonLocked = true;
+
 
     public User () {
     }
 
-    public User (Integer id, String firstName, String lastName, String email, String mobileNo, String mPin, String profilePicture, boolean isBlocked, AccountStatus accountStatus, Date dateCreated, Date dateUpdated, Platform platformType, Date deletedAt, String appVersion, LocalDateTime lastLoginTime, Role userRole, Date appUpdatedAt, String deviceBrandName, String deviceVersionCode, String osType, List<Transaction> transactions, List<Token> tokens) {
-        this.id = id;
+    public User (String firstName, String lastName, String email, String mobileNo, String mPin, String profilePicture, boolean isBlocked, AccountStatus accountStatus, Date dateCreated, Date dateUpdated, Platform platformType, Date deletedAt, String appVersion, LocalDateTime lastLoginTime, Role userRole, Date appUpdatedAt, String deviceBrandName, String deviceVersionCode, String osType, List<Transaction> transactions, List<Token> tokens) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -136,12 +152,31 @@ public class User implements UserDetails {
         this.tokens = tokens;
     }
 
-    public Integer getId () {
-        return id;
+
+    @JsonIgnore
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities () {
+        return List.of(new SimpleGrantedAuthority(userRole.name()));
     }
 
-    public void setId (Integer id) {
-        this.id = id;
+    @JsonIgnore
+    @Override
+    public String getPassword () {
+        return mPin;
+    }
+
+    public void setPassword (String password) {
+         this.mPin = password;
+    }
+
+    @JsonIgnore
+    @Override
+    public String getUsername () {
+        return this.email;
+    }
+
+    public void setUsername(String username) {
+        this.email = username;
     }
 
     public @NotNull(message = "First Name cannot be NULL") @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter valid characters in first name") String getFirstName () {
@@ -160,27 +195,27 @@ public class User implements UserDetails {
         this.lastName = lastName;
     }
 
-    public @Email(message = "Please provide a valid email address") String getEmail () {
+    public @NotNull(message = "Email cannot be NULL") @Email(message = "Please provide a valid email address") String getEmail () {
         return email;
     }
 
-    public void setEmail (@Email(message = "Please provide a valid email address") String email) {
+    public void setEmail (@NotNull(message = "Email cannot be NULL") @Email(message = "Please provide a valid email address") String email) {
         this.email = email;
     }
 
-    public @NotNull(message = "Mobile number cannot be NULL") @Pattern(regexp = "[6789]{1}[0-9]{9}", message = "Enter valid 10 digit mobile number") String getMobileNo () {
+    public @Pattern(regexp = "[6789]{1}[0-9]{9}", message = "Enter valid 10 digit mobile number") String getMobileNo () {
         return mobileNo;
     }
 
-    public void setMobileNo (@NotNull(message = "Mobile number cannot be NULL") @Pattern(regexp = "[6789]{1}[0-9]{9}", message = "Enter valid 10 digit mobile number") String mobileNo) {
+    public void setMobileNo (@Pattern(regexp = "[6789]{1}[0-9]{9}", message = "Enter valid 10 digit mobile number") String mobileNo) {
         this.mobileNo = mobileNo;
     }
 
-    public @NotNull(message = "M-PIN cannot be null")  String getmPin () {
+    public @NotNull(message = "M-PIN cannot be null") String getmPin () {
         return mPin;
     }
 
-    public void setmPin (@NotNull(message = "M-PIN cannot be null")  String mPin) {
+    public void setmPin (@NotNull(message = "M-PIN cannot be null") String mPin) {
         this.mPin = mPin;
     }
 
@@ -304,35 +339,19 @@ public class User implements UserDetails {
         this.transactions = transactions;
     }
 
-    public List<Token> getTokens() {
+    public List<Token> getTokens () {
         return tokens;
     }
 
-    public void setTokens(List<Token> tokens) {
+    public void setTokens (List<Token> tokens) {
         this.tokens = tokens;
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities () {
-        return List.of(new SimpleGrantedAuthority(userRole.name()));
+    public Integer getId () {
+        return id;
     }
 
-    @Override
-    public String getPassword () {
-        return mPin;
+    public void setId (Integer id) {
+        this.id = id;
     }
-
-    public String setPassword (String password) {
-        return this.mPin = password;
-    }
-
-    @Override
-    public String getUsername () {
-        return mobileNo;
-    }
-
-    public String setUsername(String username) {
-        return this.mobileNo = username;
-    }
-
 }

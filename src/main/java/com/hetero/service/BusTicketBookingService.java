@@ -1,9 +1,9 @@
 package com.hetero.service;
 
-/*
- This is a Integration Pay Sprint API Service.
+/**
 
- All of the Services are used the Pay Sprint Bus Ticket Booking Raw APIs
+ This is Integration Pay Sprint API Service.
+ All the Services are used the Pay Sprint Bus Ticket Booking Raw APIs
 
  For Reference Use this URL:
  https://pay-sprint.readme.io/reference/get-source-city
@@ -14,9 +14,10 @@ package com.hetero.service;
  */
 
 
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hetero.models.bus.BlockTicketRequest;
-import com.hetero.repository.TokenDao;
 import com.hetero.security.PaySprintJWTGenerator;
 import com.hetero.utils.OkHttpClientProvider;
 import okhttp3.*;
@@ -26,16 +27,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
+import java.util.Map;
 
 
 @Service
 public class BusTicketBookingService {
 
-
     private static final Logger log = LogManager.getLogger(BusTicketBookingService.class);
+
     @Autowired
     private PaySprintJWTGenerator paySprintJWTGenerator;
+    @Autowired
+    private OkHttpClientProvider okHttpClientProvider;
 
     @Value("${application.pay-sprint.base-url}")
     private String baseUrl;
@@ -43,203 +46,133 @@ public class BusTicketBookingService {
     @Value("${application.pay-sprint.authorized-key}")
     private String authorizedKey;
 
-    @Autowired
-    private OkHttpClientProvider okHttpClientProvider;
-    @Autowired
-    private TokenDao tokenDao;
-
-    public String getSourceCities() throws IOException {
-
-        String Token = paySprintJWTGenerator.getToken();
-
+    /**
+     * Generic method to make API calls
+     */
+    private String makeApiCall(String endpoint, String jsonBody) {
+        String token = paySprintJWTGenerator.getToken(); // Generate token on each call
         OkHttpClient client = okHttpClientProvider.getClient();
 
-        RequestBody emptyBody = RequestBody.create("", MediaType.get("application/json"));
+        MediaType mediaType = MediaType.parse("application/json");
+        RequestBody body = jsonBody != null ? RequestBody.create(mediaType, jsonBody) : RequestBody.create("", mediaType);
+
         Request request = new Request.Builder()
-                .url(baseUrl+"/service-api/api/v1/service/bus/ticket/source")
-                .post(emptyBody)
+                .url(baseUrl + endpoint)
+                .post(body)
                 .addHeader("accept", "application/json")
-                .addHeader("Token", Token)
+                .addHeader("Token", token)
                 .addHeader("Authorisedkey", authorizedKey)
+                .addHeader("content-type", "application/json")
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                throw new IOException("Unexpected code: " + response);
+                log.error("Error: {} - {}", response.code(), response.message());
+                return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
             }
             return response.body().string();
         } catch (Exception e) {
-            log.error("Error fetching cities: ", e);
-            return "{}"; // Return empty JSON to prevent null errors
+            log.error("Exception in API call: ", e);
+            return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
         }
-
     }
 
-    public String getAvailableTrips(int sourceId, int destinationId, String date) throws IOException {
+    /**
+     * Get list of source cities
+     */
+    public String getSourceCities() {
+        return makeApiCall("/service-api/api/v1/service/bus/ticket/source", null);
+    }
 
-        String Token = paySprintJWTGenerator.getToken();
-        OkHttpClient client = okHttpClientProvider.getClient();
-
-        MediaType mediaType = MediaType.parse("application/json");
-
+    /**
+     * Get available trips based on source, destination, and date
+     */
+    public String getAvailableTrips(int sourceId, int destinationId, String date) {
         String jsonBody = String.format("{\"source_id\":%d,\"destination_id\":%d,\"date_of_journey\":\"%s\"}",
                 sourceId, destinationId, date);
-
-        RequestBody requestBody = RequestBody.create(mediaType, jsonBody);
-
-        Request request = new Request.Builder()
-                .url(baseUrl+"/service-api/api/v1/service/bus/ticket/availabletrips")
-                .post(requestBody)
-                .addHeader("accept", "application/json")
-                .addHeader("Token", Token)
-                .addHeader("Authorisedkey", authorizedKey)
-                .addHeader("content-type", "application/json")
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                log.error("Unexpected code: " + response);
-                throw new Exception("Unexpected code: " + response);
-            }
-            return response.body().string();
-        } catch (Exception e) {
-            log.error("Error fetching available Trips: ", e);
-            return e.getMessage(); // Return empty JSON to prevent null errors
-        }
+        return makeApiCall("/service-api/api/v1/service/bus/ticket/availabletrips", jsonBody);
     }
 
-
-    public String getCurrentTripDetails(Long tripId) throws IOException {
-
-        String Token = paySprintJWTGenerator.getToken();
-        OkHttpClient client = okHttpClientProvider.getClient();
-
-        MediaType mediaType = MediaType.parse("application/json");
-
+    /**
+     * Get trip details
+     */
+    public String getCurrentTripDetails(Long tripId) {
         String jsonBody = String.format("{\"trip_id\":%d}", tripId);
-        RequestBody body = RequestBody.create(mediaType, jsonBody);
-        Request request = new Request.Builder()
-                .url(baseUrl+"/service-api/api/v1/service/bus/ticket/tripdetails")
-                .post(body)
-                .addHeader("accept", "application/json")
-                .addHeader("Token", Token)
-                .addHeader("Authorisedkey", authorizedKey)
-                .addHeader("content-type", "application/json")
-                .build();
-
-        Response response = client.newCall(request).execute();
-        if (!response.isSuccessful()) {
-            log.error("Unexpected code: " + response);
-            return null;
-        }else {
-            return response.body().string();
-        }
+        return makeApiCall("/service-api/api/v1/service/bus/ticket/tripdetails", jsonBody);
     }
 
-
-    public String getBoardingPointDetails(long bpId, long tripId) throws IOException {
-        String Token = paySprintJWTGenerator.getToken();
-        OkHttpClient client = okHttpClientProvider.getClient();
-        MediaType mediaType = MediaType.parse("application/json");
-
-        String jsonBody = String.format("{\"bpId\":%d,\"trip_id\":%d}",bpId, tripId);
-        RequestBody body = RequestBody.create(mediaType, jsonBody);
-        Request request = new Request.Builder()
-                .url(baseUrl+"/service-api/api/v1/service/bus/ticket/boardingPoint")
-                .post(body)
-                .addHeader("accept", "application/json")
-                .addHeader("Token", Token)
-                .addHeader("Authorisedkey", authorizedKey)
-                .addHeader("content-type", "application/json")
-                .build();
-        Response response = client.newCall(request).execute();
-        if (!response.isSuccessful()) {
-            log.error("Unexpected code: " + response);
-            return null;
-        }else {
-            return response.body().string();
-        }
+    /**
+     * Get boarding point details
+     */
+    public String getBoardingPointDetails(long bpId, long tripId) {
+        String jsonBody = String.format("{\"bpId\":%d,\"trip_id\":%d}", bpId, tripId);
+        return makeApiCall("/service-api/api/v1/service/bus/ticket/boardingPoint", jsonBody);
     }
 
-    public String blockTicket(BlockTicketRequest blockTicketRequest) throws IOException {
-        String Token = paySprintJWTGenerator.getToken();
-        OkHttpClient client = okHttpClientProvider.getClient();
-
+    /**
+     * Block a ticket for a user
+     */
+    public String blockTicket(BlockTicketRequest blockTicketRequest) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonRequest = objectMapper.writeValueAsString(blockTicketRequest);
-
-        MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(mediaType, jsonRequest);
-//        RequestBody body = RequestBody.create(mediaType, "{\"availableTripId\":3,\"boardingPointId\":6,\"inventoryItems\":{\"0\":{\"seatName\":\"A15\",\"fare\":102.3,\"serviceTax\":4.6,\"operatorServiceCharge\":4.6,\"ladiesSeat\":\"false\",\"passenger\":{\"name\":\"Passenger name\",\"mobile\":9999988888,\"title\":\"Mr\",\"email\":\"xyz@gmail.com\",\"age\":25,\"gender\":\"MALE\",\"address\":\"Dummy Address\",\"idType\":\"Pancard\",\"idNumber\":\"QWERT1234Y\",\"primary\":\"1\"}}}}");
-        Request request = new Request.Builder()
-                .url(baseUrl+"/service-api/api/v1/service/bus/ticket/blockticket")
-                .post(body)
-                .addHeader("accept", "application/json")
-                .addHeader("Token", Token)
-                .addHeader("Authorisedkey", authorizedKey)
-                .addHeader("content-type", "application/json")
-                .build();
-
-        Response response = client.newCall(request).execute();
-        if (!response.isSuccessful()) {
-            log.error("Unexpected code: " + response);
-            return null;
-        }  else {
-            return response.body().string();
-        }
+        return makeApiCall("/service-api/api/v1/service/bus/ticket/blockticket", jsonRequest);
     }
 
-    public String bookTicket(Long refId, Long amount) throws IOException {
-        String Token = paySprintJWTGenerator.getToken();
-        OkHttpClient client = okHttpClientProvider.getClient();
-
-        MediaType mediaType = MediaType.parse("application/json");
+    /**
+     * Book a ticket using reference ID and amount
+     */
+    public String bookTicket(Long refId, Long amount) {
         String jsonBody = String.format("{\"ref_id\":%d,\"amount\":%d}", refId, amount);
-
-        RequestBody body = RequestBody.create(mediaType, jsonBody);
-        Request request = new Request.Builder()
-                .url(baseUrl+"/service-api/api/v1/service/bus/ticket/bookticket")
-                .post(body)
-                .addHeader("accept", "application/json")
-                .addHeader("Token", Token)
-                .addHeader("Authorisedkey", authorizedKey)
-                .addHeader("content-type", "application/json")
-                .build();
-
-        Response response = client.newCall(request).execute();
-
-        if (!response.isSuccessful()) {
-            log.error("Unexpected code: " + response);
-            return null;
-        } else {
-            return response.body().string();
-        }
+        return makeApiCall("/service-api/api/v1/service/bus/ticket/bookticket", jsonBody);
     }
 
-    public String checkBookedTicket(Long refId) throws IOException {
-        String Token = paySprintJWTGenerator.getToken();
-        OkHttpClient client = okHttpClientProvider.getClient();
-
+    /**
+     * Check the status of a booked ticket
+     */
+    public String checkBookedTicket(Long refId) {
         String jsonBody = String.format("{\"ref_id\":%d}", refId);
-        MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(mediaType, jsonBody);
-        Request request = new Request.Builder()
-                .url(baseUrl+"/service-api/api/v1/service/bus/ticket/check_booked_ticket")
-                .post(body)
-                .addHeader("accept", "application/json")
-                .addHeader("Token", Token)
-                .addHeader("Authorisedkey", authorizedKey)
-                .addHeader("content-type", "application/json")
-                .build();
-
-        Response response = client.newCall(request).execute();
-
-        if (!response.isSuccessful()) {
-            log.error("Unexpected code: " + response);
-            return null;
-        } else {
-            return response.body().string();
-        }
+        return makeApiCall("/service-api/api/v1/service/bus/ticket/check_booked_ticket", jsonBody);
     }
+
+    /**
+     * Get the status of a booked ticket
+     */
+    public String getBookedTicket(Long refId) {
+        String jsonBody = String.format("{\"ref_id\":%d}", refId);
+        return makeApiCall("service-api/api/v1/service/bus/ticket/get_ticket", jsonBody);
+    }
+
+    /**
+     * Get the status of a Cancellation ticket Data
+     */
+    public String getCancellationTicketData(Long refId) {
+        String jsonBody = String.format("{\"ref_id\":%d}", refId);
+        return makeApiCall("service-api/api/v1/service/bus/ticket/get_cancellation_data", jsonBody);
+    }
+
+    /**
+     * Cancel the Ticket
+     */
+    public String cancelTicket(Long refId, Map<Integer, String> seatsToCancel) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String seatJson;
+
+        try {
+            seatJson = objectMapper.writeValueAsString(seatsToCancel);
+        } catch (JsonProcessingException e) {
+            log.error("Error processing seat list JSON: ", e);
+            return "{\"error_code\": 400, \"error_message\": \"Invalid seat format\"}";
+        }
+
+        // Construct the request JSON with Map format
+        String jsonBody = String.format("{\"refid\":%d,\"seatsToCancel\":%s}", refId, seatJson);
+
+        return makeApiCall("/service-api/api/v1/service/bus/ticket/cancel_ticket", jsonBody);
+    }
+
+
+
+
 
 }
+
