@@ -21,9 +21,9 @@ public class AuthenticationController {
     }
 
 
-    @PostMapping("/register")
+    @PostMapping("/authentication")
     public ResponseEntity<AuthenticationResponse> register(
-           @Valid @RequestBody User request
+            @RequestBody User request
             ) {
         if (request.getmPin() == null || request.getmPin().isEmpty()) {
             throw new IllegalArgumentException("M-PIN cannot be null or empty");
@@ -31,12 +31,12 @@ public class AuthenticationController {
         return ResponseEntity.ok(authService.register(request));
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(
-            @RequestBody User request
-    ) {
-        return ResponseEntity.ok(authService.authenticate(request));
-    }
+//    @PostMapping("/login")
+//    public ResponseEntity<AuthenticationResponse> login(
+//            @RequestBody User request
+//    ) {
+//        return ResponseEntity.ok(authService.authenticate(request));
+//    }
 
     @PostMapping("/refresh_token")
     public ResponseEntity refreshToken(

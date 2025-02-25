@@ -69,9 +69,14 @@ public class AuthenticationService {
         }
 
 
-        // check if user already exist. if exist than authenticate the user
+       // check if user already exist. if exist than throw an Error
+//        if(userDao.findByEmail(request.getUsername()).isPresent()) {
+//            return new AuthenticationResponse(null, null,"User already exist");
+//        }
+
+         /** check if user already exist. if exist than authenticate the user **/
         if(userDao.findByEmail(request.getUsername()).isPresent()) {
-            return new AuthenticationResponse(null, null,"User already exist");
+            return this.authenticate(request);
         }
 
         User user = new User();
@@ -131,6 +136,7 @@ public class AuthenticationService {
         return new AuthenticationResponse(accessToken, refreshToken, "User login was successful");
 
     }
+
     private void revokeAllTokenByUser(User user) {
         List<Token> validTokens = tokenRepository.findAllAccessTokensByUser(user.getId());
         if(validTokens.isEmpty()) {
