@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/transactions")
-@CrossOrigin(origins = "https://moving-raccoon-fleet.ngrok-free.app")
+@CrossOrigin(origins = "http://65.2.127.57")
 public class TransactionController {
     private static final Logger log = LogManager.getLogger(TransactionController.class);
     @Autowired

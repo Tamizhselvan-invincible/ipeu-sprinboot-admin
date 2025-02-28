@@ -45,7 +45,7 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login/**", "/register/**", "/refresh_token/**").permitAll() // Public APIs
+                        .requestMatchers("/authentication/**","/login/**", "/register/**", "/refresh_token/**").permitAll() // Public APIs
                         .requestMatchers("/dashboard", "/swagger-ui/**", "/v3/api-docs/**").hasAuthority("ADMIN") // Requires login
                         .anyRequest().authenticated() // Everything else requires authentication
                 )
@@ -53,7 +53,11 @@ public class SecurityConfig {
                         .accessDeniedHandler(accessDeniedHandler()) // Handle access denied
                 )
                 .userDetailsService(userDetailsServiceImp)
-//                .formLogin(Customizer.withDefaults())
+                .formLogin(Customizer.withDefaults())
+//                .formLogin(form -> form
+//                        .loginPage("/login")
+//                        .permitAll()
+//                )
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Enable session for form login

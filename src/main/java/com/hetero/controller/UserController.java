@@ -24,7 +24,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
-@CrossOrigin(origins = "https://moving-raccoon-fleet.ngrok-free.app")
+@CrossOrigin(origins = "http://65.2.127.57")
 public class UserController {
     private static final Logger log = LogManager.getLogger(UserController.class);
     @Autowired
@@ -189,17 +189,17 @@ public class UserController {
 
     ///GET Mapping For Platform Specific Fetching
 
-       @GetMapping("/platform/{platform}")
+       @PostMapping("/platform/{platform}")
         public ResponseEntity<List<User>> getUsersByPlatform(@PathVariable Platform platform) {
             return ResponseEntity.ok(userService.getUsersByPlatform(platform));
         }
 
-        @GetMapping("/platform/{platform}/unblocked")
+        @PostMapping("/platform/{platform}/unblocked")
         public ResponseEntity<List<User>> getUnblockedUsersByPlatform(@PathVariable Platform platform) {
             return ResponseEntity.ok(userService.getUnblockedUsersByPlatform(platform));
         }
 
-        @GetMapping("/platform/{platform}/blocked")
+        @PostMapping("/platform/{platform}/blocked")
         public ResponseEntity<List<User>> getBlockedUsersByPlatform(@PathVariable Platform platform) {
             return ResponseEntity.ok(userService.getBlockedUsersByPlatform(platform));
         }

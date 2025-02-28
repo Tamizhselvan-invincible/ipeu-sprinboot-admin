@@ -85,7 +85,7 @@ public class User implements UserDetails {
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime lastLoginTime;
 
-    @Column(name = "user_role")
+    @Column(name = "user_role", columnDefinition = "VARCHAR(20) CHECK (user_role IN ('USER', 'ADMIN', 'PROVIDER'))")
     @Enumerated(EnumType.STRING)
     Role userRole;
 
