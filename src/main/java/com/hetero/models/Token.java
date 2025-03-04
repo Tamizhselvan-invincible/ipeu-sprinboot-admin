@@ -1,6 +1,7 @@
 package com.hetero.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hetero.security.AESEncryptor;
 import jakarta.persistence.*;
 
 @Entity

@@ -3,6 +3,7 @@ package com.hetero.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hetero.security.AESEncryptor;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import jakarta.validation.constraints.Pattern;
@@ -30,11 +31,13 @@ public class User implements UserDetails {
     @NotNull(message = "First Name cannot be NULL")
     @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter valid characters in first name")
     @Column(name = "first_name", length = 50)
+    @Convert(converter = AESEncryptor.class)
     private String firstName;
 
     @NotNull(message = "Last Name cannot be NULL")
     @Pattern(regexp = "[A-Za-z.\\s]+", message = "Enter valid characters in last name")
     @Column(name = "last_name", length = 50)
+    @Convert(converter = AESEncryptor.class)
     private String lastName;
 
     @NotNull(message = "Email cannot be NULL")
@@ -44,6 +47,7 @@ public class User implements UserDetails {
 
     @Pattern(regexp = "[6789]{1}[0-9]{9}", message = "Enter valid 10 digit mobile number")
     @Column(name = "mobile_number",unique = true,nullable = true)
+    @Convert(converter = AESEncryptor.class)
     private String mobileNo;
 
     @NotNull(message = "M-PIN cannot be null")
@@ -52,6 +56,7 @@ public class User implements UserDetails {
     private String mPin;
 
     @Column(name = "profile_picture")
+    @Convert(converter = AESEncryptor.class)
     private String profilePicture;
 
     @Column(name = "is_blocked")

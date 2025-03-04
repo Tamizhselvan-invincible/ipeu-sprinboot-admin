@@ -3,6 +3,7 @@ package com.hetero.controller;
 import com.hetero.models.AuthenticationResponse;
 import com.hetero.models.User;
 import com.hetero.service.AuthenticationService;
+import com.hetero.utils.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -23,13 +24,14 @@ public class AuthenticationController {
 
 
     @PostMapping("/authentication")
-    public ResponseEntity<AuthenticationResponse> register(
+    public ResponseEntity<ApiResponse<AuthenticationResponse>> register(
             @RequestBody User request
             ) {
         if (request.getmPin() == null || request.getmPin().isEmpty()) {
             throw new IllegalArgumentException("M-PIN cannot be null or empty");
         }
-        return ResponseEntity.ok(authService.register(request));
+        ApiResponse<AuthenticationResponse> response = new ApiResponse<>(200,"User Authenticated",authService.register(request));
+        return ResponseEntity.ok().body(response);
     }
 
 //    @GetMapping("/login")

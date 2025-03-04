@@ -31,9 +31,9 @@ import java.util.Map;
 
 
 @Service
-public class BusTicketBookingService {
+public class PSBusTicketBookingService {
 
-    private static final Logger log = LogManager.getLogger(BusTicketBookingService.class);
+    private static final Logger log = LogManager.getLogger(PSBusTicketBookingService.class);
 
     @Autowired
     private PaySprintJWTGenerator paySprintJWTGenerator;

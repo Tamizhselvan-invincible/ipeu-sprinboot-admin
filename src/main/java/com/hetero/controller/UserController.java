@@ -7,6 +7,7 @@ import com.hetero.models.User;
 import com.hetero.service.LedgerService;
 import com.hetero.service.LedgerServiceImpl;
 import com.hetero.service.UserService;
+import com.hetero.utils.ApiResponse;
 import jakarta.validation.Valid;
 
 
@@ -35,7 +36,7 @@ public class UserController {
 
     ///POST MAPPINGS
     @PostMapping
-    public ResponseEntity<User> addUser(@RequestBody @Valid User user) {
+    public ResponseEntity<ApiResponse<User>> addUser(@RequestBody @Valid User user) {
         User savedUser = userService.addUser(user);
         try {
             ledgerService.updateLedgerWithRetry(new LedgerServiceImpl.TransactionUpdate(
@@ -49,12 +50,13 @@ public class UserController {
                                     : ledgerService.getLedger().getNoOfBlockedUsers()
                     )
             ));
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
+            ApiResponse<User> response = new ApiResponse<>(201, "User created successfully", savedUser);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (ConcurrentModificationException e) {
             log.error("Failed to update ledger for new user: {}", savedUser.getId(), e);
 
-
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            ApiResponse<User> errorResponse = new ApiResponse<>(409, "Conflict: Failed to update ledger", null);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
         }
     }
 
@@ -78,10 +80,12 @@ public class UserController {
                             ledgerService.getLedger().getNoOfBlockedUsers() + 1
                     )
             ));
-            return ResponseEntity.ok().build();
+            ApiResponse<User> response = new ApiResponse<>(201, "User Blocked successfully", null);
+            return ResponseEntity.ok().body(response);
         } catch (ConcurrentModificationException e) {
             log.error("Failed to update ledger for blocking user: {}", userId, e);
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            ApiResponse<User> errorResponse = new ApiResponse<>(409, "Conflict: Failed to Block User: "+ e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
         }
     }
 
@@ -104,10 +108,12 @@ public class UserController {
                             ledgerService.getLedger().getNoOfBlockedUsers() - 1
                     )
             ));
-            return ResponseEntity.ok().build();
+            ApiResponse<User> response = new ApiResponse<>(201, "User Unblocked successfully", null);
+            return ResponseEntity.ok().body(response);
         } catch (ConcurrentModificationException e) {
             log.error("Failed to update ledger for unblocking user: {}", userId, e);
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            ApiResponse<User> errorResponse = new ApiResponse<>(409, "Conflict: Failed to UnBlock User: "+ e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
         }
     }
 
@@ -134,12 +140,15 @@ public class UserController {
                                     : ledgerService.getLedger().getNoOfBlockedUsers()
                     )
             ));
+
             String message = userService.deleteUser(id);
-            return ResponseEntity.ok(Map.of("message", message));
+            ApiResponse<User> response = new ApiResponse<>(201, message, null);
+            return ResponseEntity.ok().body(response);
 
         } catch (ConcurrentModificationException e) {
             log.error("Failed to update ledger for user deletion: {}", id, e);
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Failed to update ledger");
+            ApiResponse<User> response = new ApiResponse<>(201, e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
     }
 
@@ -149,12 +158,13 @@ public class UserController {
 
     // Read operations - unchanged
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Integer id, @RequestBody User user) {
+    public ResponseEntity<ApiResponse<User>> updateUser(@PathVariable Integer id, @RequestBody User user) {
         User existingUser = userService.getUser(id);
         if (existingUser == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(userService.updateUser(id, user));
+        ApiResponse<User> response = new ApiResponse<>(200, "User updated successfully", userService.updateUser(id, user));
+        return ResponseEntity.ok(response);
     }
 
 

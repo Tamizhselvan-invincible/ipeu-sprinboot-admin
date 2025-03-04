@@ -4,11 +4,11 @@ package com.hetero.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hetero.models.City;
+import com.hetero.models.bus.City;
 import com.hetero.models.bus.BlockTicketRequest;
 import com.hetero.models.bus.TripRequest;
-import com.hetero.service.BusTicketBookingService;
 import com.hetero.service.CityService;
+import com.hetero.service.PSBusTicketBookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +27,7 @@ public class BusTicketController {
     @Autowired
     private CityService cityService;
     @Autowired
-    private BusTicketBookingService busTicketBookingService;
+    private PSBusTicketBookingService busTicketBookingService;
 
 
     @GetMapping("/cities")

@@ -1,6 +1,6 @@
 package com.hetero.service;
 
-import com.hetero.models.City;
+import com.hetero.models.bus.City;
 
 import java.util.List;
 

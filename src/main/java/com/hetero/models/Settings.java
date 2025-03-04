@@ -1,6 +1,7 @@
 package com.hetero.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hetero.security.AESEncryptor;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,12 +18,15 @@ public class Settings {
     private Long id;
 
     @Column(name = "banner_name")
+    @Convert(converter = AESEncryptor.class)
     private String bannerName;
 
     @Column(name = "app_name")
+    @Convert(converter = AESEncryptor.class)
     private String appName;
 
     @Column(name = "app_logo")
+    @Convert(converter = AESEncryptor.class)
     private String appLogo;
 
     @Column(name = "created_at")

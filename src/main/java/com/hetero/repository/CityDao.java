@@ -1,6 +1,6 @@
 package com.hetero.repository;
 
-import com.hetero.models.City;
+import com.hetero.models.bus.City;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

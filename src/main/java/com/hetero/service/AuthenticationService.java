@@ -1,5 +1,7 @@
 package com.hetero.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hetero.models.Role;
 import com.hetero.models.Token;
 import com.hetero.repository.TokenDao;
@@ -34,7 +36,6 @@ public class AuthenticationService {
 
     private final UserDao userDao;
 
-
     @Autowired
     private final PasswordEncoder passwordEncoder;
 
@@ -46,6 +47,8 @@ public class AuthenticationService {
 
     @Autowired
     private final AuthenticationManager authenticationManager;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AuthenticationService(UserDao repository,
                                  PasswordEncoder passwordEncoder,
@@ -59,7 +62,7 @@ public class AuthenticationService {
         this.authenticationManager = authenticationManager;
     }
 
-    public AuthenticationResponse register(User request) {
+    public AuthenticationResponse register(User request){
 
         if (request.getmPin() == null || request.getmPin().isEmpty()) {
             throw new IllegalArgumentException("M-PIN cannot be null or empty");
@@ -69,7 +72,7 @@ public class AuthenticationService {
         }
 
 
-       // check if user already exist. if exist than throw an Error
+      // check if user already exist. if exist than throw an Error
 //        if(userDao.findByEmail(request.getUsername()).isPresent()) {
 //            return new AuthenticationResponse(null, null,"User already exist");
 //        }
@@ -114,11 +117,11 @@ public class AuthenticationService {
 
         saveUserToken(accessToken, refreshToken, user);
 
-        return new AuthenticationResponse(accessToken, refreshToken,"User registration was successful");
+            return new AuthenticationResponse(accessToken, refreshToken, user, "User Register Successfully");
 
     }
 
-    public AuthenticationResponse authenticate(User request) throws RuntimeException{
+    public AuthenticationResponse authenticate(User request) throws RuntimeException {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
@@ -133,7 +136,7 @@ public class AuthenticationService {
         revokeAllTokenByUser(user);
         saveUserToken(accessToken, refreshToken, user);
 
-        return new AuthenticationResponse(accessToken, refreshToken, "User login was successful");
+        return new AuthenticationResponse(accessToken, refreshToken, user,"User Logged In Successfully");
 
     }
 
@@ -186,7 +189,7 @@ public class AuthenticationService {
             revokeAllTokenByUser(user);
             saveUserToken(accessToken, refreshToken, user);
 
-            return new ResponseEntity<>(new AuthenticationResponse(accessToken, refreshToken, "New token generated"), HttpStatus.OK);
+            return new ResponseEntity<>(new AuthenticationResponse(accessToken, refreshToken, user, "New token generated"), HttpStatus.OK);
         }
 
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

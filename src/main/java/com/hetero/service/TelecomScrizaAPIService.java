@@ -7,13 +7,9 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 import org.json.JSONObject;
 
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 
 @Service
@@ -36,58 +32,88 @@ public class TelecomScrizaAPIService {
 
     // * Mobile Recharge Plans
     public String rechargePayment(String mobileNo, String amount, String providerId, String clientId) {
+        HttpUrl url = buildUrl("api/telecom/v1/payment", Map.of(
+                "api_token", apiKey,
+                "number", mobileNo,
+                "amount", amount,
+                "provider_id", providerId,
+                "client_id", clientId,
+                "environment", environment
+        ));
 
-        HttpUrl url = new HttpUrl.Builder()
-                .scheme("https") // Use https or http
-                .host(baseURL.replace("https://", "").replace("http://", ""))
-                .addPathSegments("api/telecom/v1/payment")
-                .addQueryParameter("api_token", apiKey)
-                .addQueryParameter("number", mobileNo)
-                .addQueryParameter("amount", amount)
-                .addQueryParameter("provider_id", providerId)
-                .addQueryParameter("client_id", clientId)
-                .addQueryParameter("environment", environment)
-                .build();
+        String responseString = executeGetRequest(url);
+        if (responseString == null) {
+            return "{\"error_code\": 500, \"error_message\": \"Failed to process request\"}";
+        }
 
+        JSONObject jsonResponse = new JSONObject(responseString);
+        if ("success".equals(jsonResponse.optString("status"))) {
+            callCallbackURL(
+                    jsonResponse.optString("payid"),
+                    jsonResponse.optString("operator_ref"),
+                    mobileNo, providerId, clientId, amount
+            );
+        }
+
+        return responseString;
+    }
+
+    // ! This Method Gives Error Check the Documentation
+    // ! Need to Change
+    private void callCallbackURL(String payId, String operatorRef, String mobileNo, String providerId, String clientId, String amount) {
+        HttpUrl callbackUrl = buildUrl("api/telecom/v1/payment", Map.of(
+                "api_token", apiKey,
+                "payid", payId,
+                "status", "success",
+                "operator_ref", operatorRef,
+                "client_id", clientId,
+                "number", mobileNo,
+                "amount", amount,
+                "provider_id", providerId,
+                "wallet_type", "1",
+                "environment", environment
+        ));
+
+        executeGetRequest(callbackUrl);
+    }
+
+    // Generic Method to Execute API Calls
+    private String executeGetRequest(HttpUrl url) {
         OkHttpClient client = okHttpClientProvider.getClient();
 
-        // Build GET request
         Request request = new Request.Builder()
                 .url(url)
                 .get()
-                .addHeader("Accept", "application/json") // Optional header
+                .addHeader("Accept", "application/json")
                 .build();
 
-        // Execute the request
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                log.error("Error: {} - {}", response.code(), response.message());
-                return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
+                log.error("API Error: {} - {}", response.code(), response.message());
+                return null;
             }
-            // Parse the JSON response
-
-            System.out.println("Before Call Back URL");
-            JSONObject jsonResponse = new JSONObject(response.body().string());
-            System.out.println(jsonResponse.toString());
-            if ("success".equals(jsonResponse.optString("status"))) {
-                System.out.println("At Call Back URL");
-                String payId = jsonResponse.optString("payid");
-                String operatorRef = jsonResponse.optString("operator_ref");
-                callCallbackURL(payId, operatorRef, mobileNo, providerId, clientId,amount);
-            }
-
-            return response.body().string();
-
+            return response.body() != null ? response.body().string() : null;
         } catch (Exception e) {
             log.error("Exception in API call: ", e);
-            return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
+            return null;
         }
+    }
+
+    // Generic Method to Build URLs
+    private HttpUrl buildUrl(String path, Map<String, String> params) {
+        HttpUrl.Builder urlBuilder = new HttpUrl.Builder()
+                .scheme("https")
+                .host(baseURL.replace("https://", "").replace("http://", ""))
+                .addPathSegments(path);
+
+        params.forEach(urlBuilder::addQueryParameter);
+        return urlBuilder.build();
     }
 
 
     public  String getBalanceAmount(){
 
-       String url = baseURL+"/api/telecom/v1/check-balance?api_token="+apiKey;
+        String url = baseURL+"/api/telecom/v1/check-balance?api_token="+apiKey;
 
         OkHttpClient client = okHttpClientProvider.getClient();
 
@@ -107,44 +133,6 @@ public class TelecomScrizaAPIService {
             return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
         }
     }
-
-
-    // ! This Method Gives Error Check the Documentation
-    private void callCallbackURL(String payid, String operatorRef, String mobileNo, String providerId, String clientId,String amount) {
-        HttpUrl callbackUrl = new HttpUrl.Builder()
-                .scheme("https")
-                .host(baseURL.replace("https://", "").replace("http://", ""))
-                .addPathSegments("api/telecom/v1/payment")// Update this to the actual endpoint path
-                .addQueryParameter("api_token", apiKey)
-                .addQueryParameter("payid", payid)
-                .addQueryParameter("status", "success")
-                .addQueryParameter("operator_ref", operatorRef)
-                .addQueryParameter("client_id", clientId)
-                .addQueryParameter("number", mobileNo)
-                .addQueryParameter("amount", amount)
-                .addQueryParameter("provider_id", providerId)
-                .addQueryParameter("wallet_type", "1")// Assuming it's always 1
-                .addQueryParameter("environment", environment)
-                .build();
-
-        OkHttpClient client = okHttpClientProvider.getClient();
-
-        Request callbackRequest = new Request.Builder()
-                .url(callbackUrl)
-                .get()
-                .addHeader("Accept", "application/json")
-                .build();
-
-        try (Response response = client.newCall(callbackRequest).execute()) {
-            if (!response.isSuccessful()) {
-                log.error("Callback URL Error: {} - {}", response.code(), response.message());
-            }
-            System.out.println( response.body().string());
-        } catch (Exception e) {
-            log.error("Exception in Callback API call: ", e);
-        }
-    }
-
 
     // * Recharge Plan Services
     // TODO: Need Modify this Also
@@ -362,3 +350,96 @@ public String getRofferPlan(String providerId, String mobileNo) {
     }
 
 }
+
+
+
+
+
+//    public String rechargePayment(String mobileNo, String amount, String providerId, String clientId) {
+//
+//        HttpUrl url = new HttpUrl.Builder()
+//                .scheme("https") // Use https or http
+//                .host(baseURL.replace("https://", "").replace("http://", ""))
+//                .addPathSegments("api/telecom/v1/payment")
+//                .addQueryParameter("api_token", apiKey)
+//                .addQueryParameter("number", mobileNo)
+//                .addQueryParameter("amount", amount)
+//                .addQueryParameter("provider_id", providerId)
+//                .addQueryParameter("client_id", clientId)
+//                .addQueryParameter("environment", environment)
+//                .build();
+//
+//        OkHttpClient client = okHttpClientProvider.getClient();
+//
+//        // Build GET request
+//        Request request = new Request.Builder()
+//                .url(url)
+//                .get()
+//                .addHeader("Accept", "application/json") // Optional header
+//                .build();
+//
+//        // Execute the request
+//        try (Response response = client.newCall(request).execute()) {
+//            if (!response.isSuccessful()) {
+//                log.error("Error: {} - {}", response.code(), response.message());
+//                return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
+//            }
+//            // Parse the JSON response
+//
+//            System.out.println("Before Call Back URL");
+//            JSONObject jsonResponse = new JSONObject(response.body().string());
+//            System.out.println(jsonResponse.toString());
+//            if ("success".equals(jsonResponse.optString("status"))) {
+//                System.out.println("At Call Back URL");
+//                String payId = jsonResponse.optString("payid");
+//                String operatorRef = jsonResponse.optString("operator_ref");
+//                callCallbackURL(payId, operatorRef, mobileNo, providerId, clientId,amount);
+//            }
+//
+//            return response.body().string();
+//
+//        } catch (Exception e) {
+//            log.error("Exception in API call: ", e);
+//            return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
+//        }
+//    }
+//
+//
+//
+//
+//
+//    // ! This Method Gives Error Check the Documentation
+//    private void callCallbackURL(String payId, String operatorRef, String mobileNo, String providerId, String clientId,String amount) {
+//        HttpUrl callbackUrl = new HttpUrl.Builder()
+//                .scheme("https")
+//                .host(baseURL.replace("https://", "").replace("http://", ""))
+//                .addPathSegments("api/telecom/v1/payment")// Update this to the actual endpoint path
+//                .addQueryParameter("api_token", apiKey)
+//                .addQueryParameter("payid", payId)
+//                .addQueryParameter("status", "success")
+//                .addQueryParameter("operator_ref", operatorRef)
+//                .addQueryParameter("client_id", clientId)
+//                .addQueryParameter("number", mobileNo)
+//                .addQueryParameter("amount", amount)
+//                .addQueryParameter("provider_id", providerId)
+//                .addQueryParameter("wallet_type", "1")// Assuming it's always 1
+//                .addQueryParameter("environment", environment)
+//                .build();
+//
+//        OkHttpClient client = okHttpClientProvider.getClient();
+//
+//        Request callbackRequest = new Request.Builder()
+//                .url(callbackUrl)
+//                .get()
+//                .addHeader("Accept", "application/json")
+//                .build();
+//
+//        try (Response response = client.newCall(callbackRequest).execute()) {
+//            if (!response.isSuccessful()) {
+//                log.error("Callback URL Error: {} - {}", response.code(), response.message());
+//            }
+//            System.out.println( response.body().string());
+//        } catch (Exception e) {
+//            log.error("Exception in Callback API call: ", e);
+//        }
+//    }

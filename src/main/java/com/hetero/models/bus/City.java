@@ -1,7 +1,6 @@
-package com.hetero.models;
+package com.hetero.models.bus;
 
 import jakarta.persistence.*;
-import lombok.*;
 
 @Entity
 @Table(name = "cities")
