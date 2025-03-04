@@ -48,7 +48,7 @@ public class AuthenticationService {
     @Autowired
     private final AuthenticationManager authenticationManager;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+
 
     public AuthenticationService(UserDao repository,
                                  PasswordEncoder passwordEncoder,
@@ -152,6 +152,7 @@ public class AuthenticationService {
 
         tokenRepository.saveAll(validTokens);
     }
+
     private void saveUserToken(String accessToken, String refreshToken, User user) {
         Token token = new Token();
         token.setAccessToken(accessToken);

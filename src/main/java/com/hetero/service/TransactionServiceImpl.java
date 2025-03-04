@@ -6,17 +6,22 @@ import com.hetero.models.Transaction;
 import com.hetero.models.User;
 import com.hetero.repository.SubscriptionPlanDao;
 import com.hetero.repository.TransactionDao;
+import com.hetero.utils.ApiResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
 
+    private static final Logger log = LoggerFactory.getLogger(TransactionServiceImpl.class);
     @Autowired
     TransactionDao transactionDao;
 
@@ -26,17 +31,39 @@ public class TransactionServiceImpl implements TransactionService {
     @Autowired
     UserService userService;
 
+    @Autowired
+    private LedgerService ledgerService;
 
     @Transactional
     @Override
     public Transaction addTransaction (Transaction transaction) {
+
         User user = userService.getUser(transaction.getUserId());
         List<Transaction> transactions = user.getTransactions();
+        if (transactions.isEmpty()) {
+            transactions = new ArrayList<>();
+        }
         transactions.add(transaction);
         user.setTransactions(transactions);
-        SubscriptionPlan plan = subscriptionPlanDao.save(transaction.getSubscriptionPlan());
-        transaction.setSubscriptionPlan(plan);
-        return transactionDao.save(transaction);
+        if (transaction.getSubscriptionPlan() != null) {
+            SubscriptionPlan plan = subscriptionPlanDao.save(transaction.getSubscriptionPlan());
+            transaction.setSubscriptionPlan(plan);
+        }
+
+        Transaction savedTransaction =  transactionDao.save(transaction);
+        try {
+            ledgerService.updateLedgerWithRetry(new LedgerServiceImpl.TransactionUpdate(
+                    LedgerServiceImpl.UpdateType.TRANSACTION,
+                    savedTransaction,
+                    false,
+                    null,
+                    null
+            ));
+        } catch (ConcurrentModificationException e) {
+            log.error("Failed to update ledger for transaction: {}", savedTransaction.getId(), e);
+        }
+
+        return savedTransaction;
     }
 
     @Transactional
@@ -55,45 +82,65 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Transactional
     @Override
-    public Transaction getTransactionById (int id) {
+    public Transaction getTransactionById (Long id) {
         return transactionDao.findById(id).get();
     }
 
     @Transactional
     @Override
-    public String deleteTransactionById (int id) {
+    public ApiResponse<String> deleteTransactionById(Long id) {
+        Optional<Transaction> optionalTransaction = transactionDao.findById(id);
 
-        if (transactionDao.existsById(id)) {
-            Transaction transaction = transactionDao.findById(id).get();
+        if (optionalTransaction.isEmpty()) {
+            return new ApiResponse<>(HttpStatus.NOT_FOUND.value(), "Transaction Not Found", null);
+        }
+
+        Transaction transaction = optionalTransaction.get();
+
+        try {
+            ledgerService.updateLedgerWithRetry(new LedgerServiceImpl.TransactionUpdate(
+                    LedgerServiceImpl.UpdateType.TRANSACTION,
+                    transaction,
+                    true,
+                    transaction,
+                    null
+            ));
+
             transaction.setDeleted(true);
             transaction.setDeletedAt(new Date());
-            transactionDao.save(transaction);
-//            transactionDao.deleteById(id);
-            return "Transaction deleted";
-        }else
-            return "Transaction Not Found";
+            transactionDao.save(transaction); // Soft delete
 
+            return new ApiResponse<>(HttpStatus.OK.value(), "Transaction deleted successfully", null);
+        } catch (ConcurrentModificationException e) {
+            log.error("Failed to update ledger for deletion of transaction: {}", id, e);
+            return new ApiResponse<>(HttpStatus.CONFLICT.value(), "Failed to update ledger", null);
+        }
     }
+
 
     @Transactional
     @Override
-    public Transaction updateTransaction (int id, Transaction transaction) {
+    public ApiResponse<Transaction> updateTransaction(Long id, Transaction transaction) {
+        Optional<Transaction> optionalTransaction = transactionDao.findById(id);
 
-        Transaction existingTransaction = transactionDao.findById(id).get();
-        if (existingTransaction != null) {
-            existingTransaction.setAmount(transaction.getAmount());
-           existingTransaction.setAggregatedTransactionId(transaction.getAggregatedTransactionId());
-           existingTransaction.setTransactionReference(transaction.getTransactionReference());
-           existingTransaction.setDeleted(transaction.isDeleted());
-           existingTransaction.setUserId(transaction.getUserId());
-           existingTransaction.setCashBack(transaction.getCashBack());
-           existingTransaction.setStatus(transaction.getStatus());
-           existingTransaction.setDeletedAt(transaction.getDeletedAt());
-           transactionDao.save(existingTransaction);
-            return transaction;
-        }else {
-            return null;
+        if (optionalTransaction.isEmpty()) {
+            return new ApiResponse<>(HttpStatus.NOT_FOUND.value(), "Transaction not found", null);
         }
 
+        Transaction existingTransaction = optionalTransaction.get();
+
+        existingTransaction.setAmount(transaction.getAmount());
+        existingTransaction.setAggregatedTransactionId(transaction.getAggregatedTransactionId());
+        existingTransaction.setTransactionReference(transaction.getTransactionReference());
+        existingTransaction.setDeleted(transaction.isDeleted());
+        existingTransaction.setUserId(transaction.getUserId());
+        existingTransaction.setCashBack(transaction.getCashBack());
+        existingTransaction.setStatus(transaction.getStatus());
+        existingTransaction.setDeletedAt(transaction.getDeletedAt());
+
+        Transaction updatedTransaction = transactionDao.save(existingTransaction);
+
+        return new ApiResponse<>(HttpStatus.OK.value(), "Transaction updated successfully", updatedTransaction);
     }
+
 }

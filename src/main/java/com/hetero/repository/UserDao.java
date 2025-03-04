@@ -11,7 +11,7 @@ import java.util.Optional;
 
 
 @Repository
-public interface UserDao extends JpaRepository<User, Integer> {
+public interface UserDao extends JpaRepository<User, Long> {
 
     // Fetch all unblocked users
     List<User> findByIsBlockedFalse();
@@ -31,7 +31,7 @@ public interface UserDao extends JpaRepository<User, Integer> {
 
 
     @EntityGraph(attributePaths = "transactions")
-    Optional<User> findById(Integer id);
+    Optional<User> findById(Long id);
 
         List<User> findByPlatformType(Platform platformType);
 

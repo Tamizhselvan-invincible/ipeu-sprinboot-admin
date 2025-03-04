@@ -40,8 +40,7 @@ public class Settings {
     public Settings () {
     }
 
-    public Settings (Long id, String bannerName, String appName, String appLogo, Date createdAt, Date updatedAt) {
-        this.id = id;
+    public Settings (String bannerName, String appName, String appLogo, Date createdAt, Date updatedAt) {
         this.bannerName = bannerName;
         this.appName = appName;
         this.appLogo = appLogo;

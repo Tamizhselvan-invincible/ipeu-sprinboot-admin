@@ -25,8 +25,10 @@ public class TelecomScrizaAPIService {
     @Value("${application.scriza.api-token}")
     String apiKey;
 
-    String environment = "UAT";
+    @Autowired
+    PaymentVerificationService paymentVerificationService;
 
+    String environment = "UAT";
 
     // TODO: Need To Modify the redundant Code
 
@@ -46,25 +48,42 @@ public class TelecomScrizaAPIService {
             return "{\"error_code\": 500, \"error_message\": \"Failed to process request\"}";
         }
 
-        JSONObject jsonResponse = new JSONObject(responseString);
-        if ("success".equals(jsonResponse.optString("status"))) {
-            callCallbackURL(
-                    jsonResponse.optString("payid"),
-                    jsonResponse.optString("operator_ref"),
-                    mobileNo, providerId, clientId, amount
-            );
-        }
 
-        return responseString;
+        JSONObject jsonResponse = new JSONObject(responseString);
+        JSONObject transactionDetails = jsonResponse.optJSONObject("transaction_details"); // Extract nested JSON
+
+        String payId = transactionDetails != null ? transactionDetails.optString("payid", "") : "";
+        String operatorRef = transactionDetails != null ? transactionDetails.optString("operator_ref", "") : "";
+
+        String status = "success".equals(jsonResponse.optString("status")) ? "success" : "failure";
+
+       String callBackURL =  callCallbackURL(payId, operatorRef, mobileNo, providerId, clientId, amount, status);
+
+//        return responseString;
+        return callBackURL;
     }
+
 
     // ! This Method Gives Error Check the Documentation
     // ! Need to Change
-    private void callCallbackURL(String payId, String operatorRef, String mobileNo, String providerId, String clientId, String amount) {
+    /*
+     ? Final assessment is revels this is works like a Recharge API.
+     ? This Requires the amount Field which is the documentation doesn't mention
+     ? I don't know this is the flow or not. currently I'm use the same "/payment"
+     ? Endpoint for both API calls.
+    */
+    private String callCallbackURL(
+            String payId,
+            String operatorRef,
+            String mobileNo,
+            String providerId,
+            String clientId,
+            String amount,
+            String status) {
         HttpUrl callbackUrl = buildUrl("api/telecom/v1/payment", Map.of(
                 "api_token", apiKey,
                 "payid", payId,
-                "status", "success",
+                "status", status,
                 "operator_ref", operatorRef,
                 "client_id", clientId,
                 "number", mobileNo,
@@ -74,7 +93,12 @@ public class TelecomScrizaAPIService {
                 "environment", environment
         ));
 
-        executeGetRequest(callbackUrl);
+//        System.out.println("Before Execute callbackUrl: " + callbackUrl);
+        String callBackResponse = executeGetRequest(callbackUrl);
+//        System.out.println("After Execute callbackUrl: " + callBackResponse);
+
+
+        return callBackResponse;
     }
 
     // Generic Method to Execute API Calls

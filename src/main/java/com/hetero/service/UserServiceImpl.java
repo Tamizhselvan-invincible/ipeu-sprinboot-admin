@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public User updateUserBlockStatus(Integer id, User updatedUser) {
+    public User updateUserBlockStatus(Long id, User updatedUser) {
         User existingUser = getUser(id);
         if (existingUser == null) new UserNotFoundException("User with ID " + id + " not found");
 
@@ -58,7 +58,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public List<Transaction> getUserTransactions(Integer userId) {
+    public List<Transaction> getUserTransactions(Long userId) {
 
         User existingUser = getUser(userId);
         if (existingUser == null) new UserNotFoundException("User with ID " + userId + " not found");
@@ -70,7 +70,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void blockUser(Integer userId) {
+    public void blockUser(Long userId) {
         User user = userDao.findById(userId).orElseThrow();
         user.setBlocked(true);
         userDao.save(user);
@@ -78,7 +78,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void unblockUser(Integer userId) {
+    public void unblockUser(Long userId) {
         User user = userDao.findById(userId).orElseThrow();
         user.setBlocked(false);
         userDao.save(user);
@@ -86,7 +86,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public User updateUser(Integer id, User newUser) {
+    public User updateUser(Long id, User newUser) {
         // Fetch the existing user from DB
         Optional<User> optionalUser = userDao.findById(id);
 
@@ -138,7 +138,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public String deleteUser (Integer id) {
+    public String deleteUser (Long id) {
         Optional<User> optionalUser = userDao.findById(id);
         if (optionalUser.isEmpty()) {
             throw new UserNotFoundException("User with ID " + id + " not found");
@@ -154,7 +154,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public User getUser (Integer id) {
+    public User getUser (Long id) {
         return userDao.findById(id).orElseThrow(() -> new UserNotFoundException("User with ID " + id + " not found"));
     }
 

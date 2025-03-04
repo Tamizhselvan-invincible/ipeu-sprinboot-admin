@@ -19,12 +19,12 @@ public class SubscriptionPlan {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
-    @NotBlank(message = "Plan name is required")
+//    @NotBlank(message = "Plan name is required")
     @Column(name = "plan_name")
     @Convert(converter = AESEncryptor.class)
     private String name;
 
-    @NotBlank(message = "Operator name is required")
+//    @NotBlank(message = "Operator name is required")
     @Convert(converter = AESEncryptor.class)
     private String operator;
 
@@ -32,7 +32,7 @@ public class SubscriptionPlan {
     @Column(precision = 10, scale = 2)
     private BigDecimal amount;
 
-    @NotNull(message = "Validity is required")
+//    @NotNull(message = "Validity is required")
     private Integer validity;
 
     @Column(name = "data_limit")
@@ -57,10 +57,10 @@ public class SubscriptionPlan {
     private Date dateCreated;
 
     public SubscriptionPlan () {
+        this.dateCreated = new Date();
     }
 
-    public SubscriptionPlan (Long id, String name, String operator, BigDecimal amount, Integer validity, String dataLimit, String callBenefits, String smsBenefits, String description, boolean isActive, Date dateCreated) {
-        this.id = id;
+    public SubscriptionPlan ( String name, String operator, BigDecimal amount, Integer validity, String dataLimit, String callBenefits, String smsBenefits, String description, boolean isActive) {
         this.name = name;
         this.operator = operator;
         this.amount = amount;
@@ -70,7 +70,7 @@ public class SubscriptionPlan {
         this.smsBenefits = smsBenefits;
         this.description = description;
         this.isActive = isActive;
-        this.dateCreated = dateCreated;
+        this.dateCreated = new Date();
     }
 
     public Long getId () {
@@ -81,19 +81,19 @@ public class SubscriptionPlan {
         this.id = id;
     }
 
-    public @NotBlank(message = "Plan name is required") String getName () {
+    public String getName () {
         return name;
     }
 
-    public void setName (@NotBlank(message = "Plan name is required") String name) {
+    public void setName (String name) {
         this.name = name;
     }
 
-    public @NotBlank(message = "Operator name is required") String getOperator () {
+    public  String getOperator () {
         return operator;
     }
 
-    public void setOperator (@NotBlank(message = "Operator name is required") String operator) {
+    public void setOperator ( String operator) {
         this.operator = operator;
     }
 
@@ -105,11 +105,11 @@ public class SubscriptionPlan {
         this.amount = amount;
     }
 
-    public @NotNull(message = "Validity is required") Integer getValidity () {
+    public  Integer getValidity () {
         return validity;
     }
 
-    public void setValidity (@NotNull(message = "Validity is required") Integer validity) {
+    public void setValidity ( Integer validity) {
         this.validity = validity;
     }
 

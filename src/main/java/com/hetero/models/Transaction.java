@@ -8,7 +8,10 @@ import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.Date;
+
+import static com.fasterxml.jackson.databind.type.LogicalType.DateTime;
 
 
 @Entity
@@ -21,12 +24,30 @@ public class Transaction {
     private Long id;
 
     @Column(name = "aggregated_transaction_id")
-    @Convert(converter = AESEncryptor.class)
     private Long aggregatedTransactionId;
+
+    @Override
+    public String toString () {
+        return "Transaction{" +
+                "id=" + id +
+                ", aggregatedTransactionId=" + aggregatedTransactionId +
+                ", status=" + status +
+                ", cashBack='" + cashBack + '\'' +
+                ", isDeleted=" + isDeleted +
+                ", userId=" + userId +
+                ", transactionTakenTime=" + transactionTakenTime +
+                ", subscriptionPlan=" + subscriptionPlan +
+                ", amount='" + amount + '\'' +
+                ", platformType=" + platformType +
+                ", paymentMethod=" + paymentMethod +
+                ", dateCreated=" + dateCreated +
+                ", deletedAt=" + deletedAt +
+                ", transactionReference='" + transactionReference + '\'' +
+                '}';
+    }
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
-    @Convert(converter = AESEncryptor.class)
     private TransactionStatus status;
 
     @Column(name = "cashback_amount")
@@ -38,7 +59,7 @@ public class Transaction {
 
     @Column(name = "user_id", nullable = false)
 
-    private Integer userId;
+    private Long userId;
 
     @Column(name = "transaction_taken_time")
     @Convert(converter = AESEncryptor.class)
@@ -78,10 +99,10 @@ public class Transaction {
 
 
     public Transaction () {
+        this.dateCreated = new Date();
     }
 
-    public Transaction (Long id, Long aggregatedTransactionId, TransactionStatus status, String cashBack, boolean isDeleted, Integer userId, Long transactionTakenTime, SubscriptionPlan subscriptionPlan, String amount, Platform platformType, PaymentMethod paymentMethod, Date dateCreated, Date deletedAt, String transactionReference) {
-        this.id = id;
+    public Transaction (Long aggregatedTransactionId, TransactionStatus status, String cashBack, boolean isDeleted, Long userId, Long transactionTakenTime, SubscriptionPlan subscriptionPlan, String amount, Platform platformType, PaymentMethod paymentMethod, Date deletedAt, String transactionReference) {
         this.aggregatedTransactionId = aggregatedTransactionId;
         this.status = status;
         this.cashBack = cashBack;
@@ -92,7 +113,7 @@ public class Transaction {
         this.amount = amount;
         this.platformType = platformType;
         this.paymentMethod = paymentMethod;
-        this.dateCreated = dateCreated;
+        this.dateCreated = new Date();
         this.deletedAt = deletedAt;
         this.transactionReference = transactionReference;
     }
@@ -137,11 +158,11 @@ public class Transaction {
         isDeleted = deleted;
     }
 
-    public Integer getUserId () {
+    public Long getUserId () {
         return userId;
     }
 
-    public void setUserId (Integer userId) {
+    public void setUserId (Long userId) {
         this.userId = userId;
     }
 
@@ -185,7 +206,7 @@ public class Transaction {
         this.paymentMethod = paymentMethod;
     }
 
-    public Date getDateCreated () {
+    public Date getDateCreated (){
         return dateCreated;
     }
 

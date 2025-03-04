@@ -3,6 +3,7 @@ package com.hetero.controller;
 import com.hetero.models.AuthenticationResponse;
 import com.hetero.models.User;
 import com.hetero.service.AuthenticationService;
+import com.hetero.utils.ApiErrorResponse;
 import com.hetero.utils.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

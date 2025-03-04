@@ -62,7 +62,7 @@ public class UserController {
 
 
     @PostMapping("/block")
-    public ResponseEntity<?> blockUser(@RequestParam Integer userId) {
+    public ResponseEntity<?> blockUser(@RequestParam Long userId) {
         User user = userService.getUser(userId);
         if (user == null || user.isBlocked()) {
             return ResponseEntity.badRequest().body("User Not Found or Already Blocked");
@@ -90,7 +90,7 @@ public class UserController {
     }
 
     @PostMapping("/unblock")
-    public ResponseEntity<?> unblockUser(@RequestParam Integer userId) {
+    public ResponseEntity<?> unblockUser(@RequestParam Long userId) {
         User user = userService.getUser(userId);
         if (user == null || !user.isBlocked()) {
             return ResponseEntity.badRequest().body("User Not Found or Already Unblocked");
@@ -121,7 +121,7 @@ public class UserController {
     /// Delete Mapping
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Integer id) {
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         User user = userService.getUser(id);
         if (user == null) {
             throw new UserNotFoundException("User with ID " + id + " not found");
@@ -158,7 +158,7 @@ public class UserController {
 
     // Read operations - unchanged
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<User>> updateUser(@PathVariable Integer id, @RequestBody User user) {
+    public ResponseEntity<ApiResponse<User>> updateUser(@PathVariable Long id, @RequestBody User user) {
         User existingUser = userService.getUser(id);
         if (existingUser == null) {
             return ResponseEntity.notFound().build();
@@ -171,12 +171,12 @@ public class UserController {
     ///GET MAPPINGS
 
     @GetMapping("/{id}/transactions")
-    public ResponseEntity<List<Transaction>> getUserTransactions(@PathVariable Integer id) {
+    public ResponseEntity<List<Transaction>> getUserTransactions(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserTransactions(id));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUser(@PathVariable Integer id) {
+    public ResponseEntity<User> getUser(@PathVariable Long id) {
         User user = userService.getUser(id);
         return user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
     }

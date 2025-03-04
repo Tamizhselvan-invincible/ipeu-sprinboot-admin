@@ -11,10 +11,10 @@ import java.util.List;
 
 
 @Repository
-public interface TransactionDao extends JpaRepository<Transaction, Integer> {
+public interface TransactionDao extends JpaRepository<Transaction, Long> {
 
     @Query("SELECT t FROM Transaction t WHERE t.userId = :userId")
-    List<Transaction> findByUserId(@Param("userId") Integer userId);
+    List<Transaction> findByUserId(@Param("userId") Long userId);
 
     List<Transaction> findByPlatformType(Platform platformType);
 }
