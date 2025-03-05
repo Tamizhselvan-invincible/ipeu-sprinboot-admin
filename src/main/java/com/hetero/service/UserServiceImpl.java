@@ -130,10 +130,22 @@ public class UserServiceImpl implements UserService {
         return userDao.save(existingUser);
     }
 
+
+
     @Transactional
     @Override
     public void updateUserTransactions (User user) {
         userDao.save(user);
+    }
+
+
+    @Transactional
+    @Override
+    public void updateUserCashBackTransactions(Long userId,Double cashBackAmount) {
+       User user = userDao.findById(userId).orElseThrow();
+       Double cashBack = Double.parseDouble(user.getCashBack()) + cashBackAmount;
+       user.setCashBack(cashBack.toString());
+       userDao.save(user);
     }
 
     @Transactional

@@ -26,25 +26,7 @@ public class Transaction {
     @Column(name = "aggregated_transaction_id")
     private Long aggregatedTransactionId;
 
-    @Override
-    public String toString () {
-        return "Transaction{" +
-                "id=" + id +
-                ", aggregatedTransactionId=" + aggregatedTransactionId +
-                ", status=" + status +
-                ", cashBack='" + cashBack + '\'' +
-                ", isDeleted=" + isDeleted +
-                ", userId=" + userId +
-                ", transactionTakenTime=" + transactionTakenTime +
-                ", subscriptionPlan=" + subscriptionPlan +
-                ", amount='" + amount + '\'' +
-                ", platformType=" + platformType +
-                ", paymentMethod=" + paymentMethod +
-                ", dateCreated=" + dateCreated +
-                ", deletedAt=" + deletedAt +
-                ", transactionReference='" + transactionReference + '\'' +
-                '}';
-    }
+
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
@@ -228,5 +210,26 @@ public class Transaction {
 
     public void setTransactionReference (String transactionReference) {
         this.transactionReference = transactionReference;
+    }
+
+
+    @Override
+    public String toString () {
+        return "Transaction{" +
+                "id=" + id +
+                ", aggregatedTransactionId=" + aggregatedTransactionId +
+                ", status=" + status +
+                ", cashBack='" + cashBack + '\'' +
+                ", isDeleted=" + isDeleted +
+                ", userId=" + userId +
+                ", transactionTakenTime=" + transactionTakenTime +
+                ", subscriptionPlan=" + subscriptionPlan +
+                ", amount='" + amount + '\'' +
+                ", platformType=" + platformType +
+                ", paymentMethod=" + paymentMethod +
+                ", dateCreated=" + dateCreated +
+                ", deletedAt=" + deletedAt +
+                ", transactionReference='" + transactionReference + '\'' +
+                '}';
     }
 }

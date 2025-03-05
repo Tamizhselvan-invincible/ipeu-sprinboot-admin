@@ -19,6 +19,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -109,6 +110,7 @@ public class AuthenticationService {
             user.setTokens(request.getTokens());
 
 
+        user.setLastLoginTime(LocalDateTime.now());
 
         user = userDao.save(user);
 
@@ -121,7 +123,7 @@ public class AuthenticationService {
 
     }
 
-    public AuthenticationResponse authenticate(User request) throws RuntimeException {
+    public AuthenticationResponse authenticate(User request) throws RuntimeException{
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
@@ -129,13 +131,17 @@ public class AuthenticationService {
                 )
         );
 
+
+
         User user = userDao.findByEmail(request.getUsername()).orElseThrow(()->new RuntimeException("No user found"));
+
+        user.setLastLoginTime(LocalDateTime.now());
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
+        userDao.save(user);
         revokeAllTokenByUser(user);
         saveUserToken(accessToken, refreshToken, user);
-
         return new AuthenticationResponse(accessToken, refreshToken, user,"User Logged In Successfully");
 
     }

@@ -88,6 +88,7 @@ public class TeleComController {
             transaction.setPlatformType(platform);
             transaction.setSubscriptionPlan(subscriptionPlan);
 
+            userService.updateUserCashBackTransactions(userId,cashback);
             transactionService.addTransaction(transaction);
 
         } catch (JsonProcessingException e) {

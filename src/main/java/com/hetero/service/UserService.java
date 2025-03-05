@@ -14,6 +14,7 @@ public interface UserService {
     User getUser(Long id);
 
     void updateUserTransactions(User user);
+    void updateUserCashBackTransactions(Long userId,Double cashBackAmount);
 
     List<Transaction> getUserTransactions(Long userId);
     List<User> getAllUsers();

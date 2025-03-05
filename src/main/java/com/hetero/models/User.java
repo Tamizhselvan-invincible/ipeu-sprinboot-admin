@@ -14,10 +14,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 
 @Entity
@@ -76,6 +73,21 @@ public class User implements UserDetails {
     @UpdateTimestamp
     private Date dateUpdated;
 
+    @Column(name = "cashback_amount")
+    @Convert(converter = AESEncryptor.class)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String cashBack;
+
+    @Column(name = "card_number")
+    @Convert(converter = AESEncryptor.class)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String cardNumber;
+
+
+    @Column(name = "card_type")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private CardType cardType;
+
     @Column
     @Enumerated(EnumType.STRING)
     private Platform platformType = Platform.ALL;
@@ -131,9 +143,35 @@ public class User implements UserDetails {
 
 
     public User () {
+        this.cardType = CardType.BASIC;
+        this.dateCreated = new Date();
+        this.dateUpdated = new Date();
+        this.cardNumber = generateUniqueCardNumber();
+        this.cashBack = "0.0";
     }
 
-    public User (String firstName, String lastName, String email, String mobileNo, String mPin, String profilePicture, boolean isBlocked, AccountStatus accountStatus, Date dateCreated, Date dateUpdated, Platform platformType, Date deletedAt, String appVersion, LocalDateTime lastLoginTime, Role userRole, Date appUpdatedAt, String deviceBrandName, String deviceVersionCode, String osType, List<Transaction> transactions, List<Token> tokens) {
+    public User (
+            String firstName,
+            String lastName,
+            String email,
+            String mobileNo,
+            String mPin,
+            String profilePicture,
+            boolean isBlocked,
+            AccountStatus accountStatus,
+            Date dateUpdated,
+            Platform platformType,
+            Date deletedAt,
+            String appVersion,
+            LocalDateTime lastLoginTime,
+            Role userRole,
+            Date appUpdatedAt,
+            String deviceBrandName,
+            String deviceVersionCode,
+            String osType,
+            String cashBack,
+            List<Transaction> transactions,
+            List<Token> tokens) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -142,7 +180,7 @@ public class User implements UserDetails {
         this.profilePicture = profilePicture;
         this.isBlocked = isBlocked;
         this.accountStatus = accountStatus;
-        this.dateCreated = dateCreated;
+        this.dateCreated = new Date();
         this.dateUpdated = dateUpdated;
         this.platformType = platformType;
         this.deletedAt = deletedAt;
@@ -155,6 +193,9 @@ public class User implements UserDetails {
         this.osType = osType;
         this.transactions = transactions;
         this.tokens = tokens;
+        this.cardNumber = generateUniqueCardNumber();
+        this.cardType = CardType.BASIC;
+        this.cashBack = cashBack;
     }
 
 
@@ -206,6 +247,30 @@ public class User implements UserDetails {
 
     public void setEmail (@NotNull(message = "Email cannot be NULL") @Email(message = "Please provide a valid email address") String email) {
         this.email = email;
+    }
+
+    public String getCashBack () {
+        return cashBack;
+    }
+
+    public void setCashBack (String cashBack) {
+        this.cashBack = cashBack;
+    }
+
+    public String getCardNumber () {
+        return cardNumber;
+    }
+
+    public void setCardNumber (String cardNumber) {
+        this.cardNumber = cardNumber;
+    }
+
+    public CardType getCardType () {
+        return cardType;
+    }
+
+    public void setCardType (CardType cardType) {
+        this.cardType = cardType;
     }
 
     public @Pattern(regexp = "[6789]{1}[0-9]{9}", message = "Enter valid 10 digit mobile number") String getMobileNo () {
@@ -358,5 +423,16 @@ public class User implements UserDetails {
 
     public void setId (Long id) {
         this.id = id;
+    }
+
+
+    public static String generateUniqueCardNumber() {
+        String prefix = "IP";
+        // Generate UUID and extract only the required number of characters
+        String uuid = UUID.randomUUID().toString().replace("-", ""); // Remove hyphens
+        String uniqueDigits = uuid.substring(0, 12); // Take first 12 characters
+
+        // Format as IPXXXX-XXXX-XXXX
+        return prefix + uniqueDigits.substring(0, 4) + "-" + uniqueDigits.substring(4, 8) + "-" + uniqueDigits.substring(8, 12);
     }
 }

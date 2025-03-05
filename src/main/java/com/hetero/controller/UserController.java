@@ -25,7 +25,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
-@CrossOrigin(origins = "http://65.2.127.57")
 public class UserController {
     private static final Logger log = LogManager.getLogger(UserController.class);
     @Autowired
@@ -154,7 +153,6 @@ public class UserController {
 
 
     ///Put Mapping
-
 
     // Read operations - unchanged
     @PutMapping("/{id}")
