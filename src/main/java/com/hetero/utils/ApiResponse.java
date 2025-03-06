@@ -8,6 +8,16 @@ public class ApiResponse<T> {
     private LocalDateTime timestamp;
     private T data;
 
+    @Override
+    public String toString () {
+        return "ApiResponse{" +
+                "status=" + status +
+                ", message='" + message + '\'' +
+                ", timestamp=" + timestamp +
+                ", data=" + data +
+                '}';
+    }
+
     public ApiResponse(int status, String message, T data) {
         this.status = status;
         this.message = message;

@@ -1,7 +1,10 @@
 package com.hetero.exception;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hetero.utils.ApiErrorResponse;
-import com.hetero.utils.ApiResponse;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.apache.logging.log4j.LogManager;
@@ -15,9 +18,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.HashMap;
+
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,13 @@ public class GlobalExceptionHandler {
         log.error("Handler not found: {}", exception.getMessage());
 
         return buildErrorResponse(HttpStatus.NOT_FOUND, "Not Found", exception.getMessage(), null);
+    }
+
+    @ExceptionHandler(JsonProcessingException.class)
+    public ResponseEntity<?> handleJsonProcessingExceptionException(JsonProcessingException exception) {
+        log.error("Json Not Processing Exception : {}", exception.getMessage());
+
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Error", exception.getMessage(), null);
     }
 
     // Handle NoResourceFoundException (Custom Not Found Exception)
@@ -80,6 +88,33 @@ public class GlobalExceptionHandler {
         log.error("Unexpected error: {}", ex.getMessage(), ex);
 
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(SignatureException.class)
+    public ResponseEntity<?> handleSignatureException(SignatureException ex) {
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED,"Invalid JWT token", ex.getMessage(), null);
+    }
+
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<?> handleJwtException(JwtException ex) {
+        log.error("JWT Exception: {}", ex.getMessage());
+
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Authentication Failed", ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<?> handleJwtException(ExpiredJwtException ex) {
+        log.error("JWT Token is Expired Exception: {}", ex.getMessage());
+
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, "JWT Token is Expired", ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(JWTTokenNotValid.class)
+    public ResponseEntity<?> handleJwtException(JWTTokenNotValid ex) {
+        log.error("JWT Token is Might Be Expired or Reset Exception: {}", ex.getMessage());
+
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, "JWT Token is Might be Expired or Reset", ex.getMessage(), null);
     }
 
     // Common method to build standard error response

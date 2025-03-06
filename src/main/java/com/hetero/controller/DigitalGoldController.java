@@ -120,4 +120,100 @@ public class DigitalGoldController {
         return ResponseEntity.ok().body(apiResponse);
     }
 
+
+    @PostMapping("/quotation/get")
+    public ResponseEntity<?> getQuotationFromService(@RequestParam String customerId,
+                                                     @RequestParam String amount,
+                                                     @RequestParam String quantity){
+        String data = digitalGoldService.getQuotations(customerId, amount, quantity);
+        JsonNode jsonData;
+        try {
+            jsonData = objectMapper.readTree(data);
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, "Error parsing JSON", null));
+        }
+
+        ApiResponse<JsonNode> apiResponse = new ApiResponse<>(200, "Quotations Retrieved", jsonData);
+        return ResponseEntity.ok().body(apiResponse);
+    }
+
+    @PostMapping("/quotation/validate")
+    public ResponseEntity<?> validateQuotationFromService(@RequestParam String customerId,
+                                                     @RequestParam String billingAddressId,
+                                                     @RequestParam String quoteId){
+        String data = digitalGoldService.validateQuotations(customerId, billingAddressId, quoteId);
+        JsonNode jsonData;
+        try {
+            jsonData = objectMapper.readTree(data);
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, "Error parsing JSON", null));
+        }
+
+        ApiResponse<JsonNode> apiResponse = new ApiResponse<>(200, "Quotations Validation Info", jsonData);
+        return ResponseEntity.ok().body(apiResponse);
+    }
+
+
+    @PostMapping("/send_otp")
+    public ResponseEntity<?> sendOTPFromService(
+            @RequestParam  String refId,
+            @RequestParam String customerId,
+            @RequestParam String billingAddressId,
+            @RequestParam String quoteId){
+
+        String data = digitalGoldService.sendOTPToCustomer(refId, customerId, billingAddressId, quoteId);
+        JsonNode jsonData;
+        try {
+            jsonData = objectMapper.readTree(data);
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, "Error parsing JSON", null));
+        }
+
+        ApiResponse<JsonNode> apiResponse = new ApiResponse<>(200, "OTP Sent Info", jsonData);
+        return ResponseEntity.ok().body(apiResponse);
+    }
+
+
+    @PostMapping("/buy_execute")
+    public ResponseEntity<?> buyExecuteFromService(
+           @RequestParam String refId,
+           @RequestParam String customerId,
+           @RequestParam String billingAddressId,
+           @RequestParam String quoteId,
+           @RequestParam String stateResp,
+           @RequestParam Double otp){
+
+        String data = digitalGoldService.buyExecute(refId, customerId, billingAddressId, quoteId, stateResp, otp);
+        JsonNode jsonData;
+        try {
+            jsonData = objectMapper.readTree(data);
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, "Error parsing JSON", null));
+        }
+
+        ApiResponse<JsonNode> apiResponse = new ApiResponse<>(200, "Gold/Silver Buy Info", jsonData);
+        return ResponseEntity.ok().body(apiResponse);
+    }
+
+
+    @PostMapping("/status")
+    public ResponseEntity<?> transactionStatusFromService(@RequestParam String refId){
+
+        String data = digitalGoldService.transactionStatus(refId);
+        JsonNode jsonData;
+        try {
+            jsonData = objectMapper.readTree(data);
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, "Error parsing JSON", null));
+        }
+
+        ApiResponse<JsonNode> apiResponse = new ApiResponse<>(200, "Transaction Status", jsonData);
+        return ResponseEntity.ok().body(apiResponse);
+    }
+
 }

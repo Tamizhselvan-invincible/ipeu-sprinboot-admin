@@ -1,11 +1,18 @@
 package com.hetero.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hetero.models.telecom.BillPaymentRequest;
+import com.hetero.utils.ApiErrorResponse;
+import com.hetero.utils.ApiResponse;
 import com.hetero.utils.OkHttpClientProvider;
 import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.json.JSONObject;
 
@@ -29,6 +36,8 @@ public class TelecomScrizaAPIService {
     PaymentVerificationService paymentVerificationService;
 
     String environment = "UAT";
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     // TODO: Need To Modify the redundant Code
 
@@ -59,7 +68,6 @@ public class TelecomScrizaAPIService {
 
        String callBackURL =  callCallbackURL(payId, operatorRef, mobileNo, providerId, clientId, amount, status);
 
-//        return responseString;
         return callBackURL;
     }
 
@@ -92,12 +100,7 @@ public class TelecomScrizaAPIService {
                 "wallet_type", "1",
                 "environment", environment
         ));
-
-//        System.out.println("Before Execute callbackUrl: " + callbackUrl);
         String callBackResponse = executeGetRequest(callbackUrl);
-//        System.out.println("After Execute callbackUrl: " + callBackResponse);
-
-
         return callBackResponse;
     }
 
@@ -159,219 +162,198 @@ public class TelecomScrizaAPIService {
     }
 
     // * Recharge Plan Services
+
+
+    public ResponseEntity<?> makePostRequest(String endpoint, Map<String, String> params) {
+        OkHttpClient client = okHttpClientProvider.getClient();
+
+        MultipartBody.Builder formBuilder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+        formBuilder.addFormDataPart("api_token", apiKey);
+
+        params.forEach(formBuilder::addFormDataPart);
+
+        Request request = new Request.Builder()
+                .url(baseURL + endpoint)
+                .post(formBuilder.build())
+                .addHeader("environment", environment)
+                .addHeader("Accept", "application/json")
+                .build();
+
+        System.out.println("Before Call : ");
+        try (Response response = client.newCall(request).execute()) {
+            int statusCode = response.code();
+            String responseBody = response.body() != null ? response.body().string() : "";
+
+            JsonNode jsonData;
+           jsonData = objectMapper.readTree(responseBody);
+
+            if (!response.isSuccessful()) {
+                log.error("Error: {} - {}", statusCode, response.message());
+                ApiResponse<JsonNode> errorResponse = new ApiResponse<>(statusCode, response.message(), jsonData);
+                return ResponseEntity.status(statusCode).body(errorResponse);
+            }
+
+            ApiResponse<JsonNode> successResponse = new ApiResponse<>(statusCode, "Success", jsonData);
+
+            return ResponseEntity.status(statusCode).body(successResponse);
+        } catch (Exception e) {
+            log.error("Exception in API call: ", e);
+            ApiErrorResponse<String> errorResponse = new ApiErrorResponse<>(500, "Internal Server Error", e.getMessage(),null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+
     // TODO: Need Modify this Also
-    public String getPlansService1(String providerId,String stateId) {
 
-
-        OkHttpClient client = okHttpClientProvider.getClient();
-
-        RequestBody formBody = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("api_token", apiKey)
-                .addFormDataPart("provider_id", providerId)
-                .addFormDataPart("state_id", stateId)
-                .build();
-
-        Request request = new Request.Builder()
-                .url(baseURL+"/api/plan/v1/prepaid-plan")
-                .post(formBody)
-                .addHeader("environment", environment)
-                .addHeader("Accept", "application/json") // Optional header
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                log.error("Error: {} - {}", response.code(), response.message());
-                return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
-            }
-            return response.body().string();
-        } catch (Exception e) {
-            log.error("Exception in API call: ", e);
-            return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
-        }
+    public ResponseEntity<?> getPlansService1(String providerId, String stateId) {
+        return makePostRequest("/api/plan/v1/prepaid-plan", Map.of(
+                "provider_id", providerId,
+                "state_id", stateId
+        ));
     }
 
-    public String getPlansService2(String providerId,String stateId) {
-
-        OkHttpClient client = okHttpClientProvider.getClient();
-
-        RequestBody formBody = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("api_token", apiKey)
-                .addFormDataPart("provider_id", providerId)
-                .addFormDataPart("state_id", stateId)
-                .build();
-
-        Request request = new Request.Builder()
-                .url(baseURL+"/api/plan/v1/prepaid-plan2")
-                .post(formBody)
-                .addHeader("environment", environment)
-                .addHeader("Accept", "application/json") // Optional header
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                log.error("Error: {} - {}", response.code(), response.message());
-                return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
-            }
-            return response.body().string();
-        } catch (Exception e) {
-            log.error("Exception in API call: ", e);
-            return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
-        }
+    public ResponseEntity<?> getPlansService2(String providerId, String stateId) {
+        return makePostRequest("/api/plan/v1/prepaid-plan2", Map.of(
+                "provider_id", providerId,
+                "state_id", stateId
+        ));
     }
 
-public String getRofferPlan(String providerId, String mobileNo) {
-    OkHttpClient client = okHttpClientProvider.getClient();
-
-    RequestBody requestBody = new MultipartBody.Builder()
-            .setType(MultipartBody.FORM)
-            .addFormDataPart("api_token", apiKey)
-            .addFormDataPart("provider_id", providerId)
-            .addFormDataPart("mobile_number", mobileNo)
-            .build();
-
-    // Creating the request
-    Request request = new Request.Builder()
-            .url(baseURL+"/api/plan/v1/r-offer")
-            .post(requestBody)
-            .addHeader("environment", environment)
-            .build();
-
-
-    try (Response response = client.newCall(request).execute()) {
-        if (!response.isSuccessful()) {
-            log.error("Error: {} - {}", response.code(), response.message());
-            log.error("Response Body: {}", response.body().string());
-            return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
-        }
-        return response.body().string();
-    } catch (Exception e) {
-        log.error("Exception in API call: ", e);
-        return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
-    }
-}
-
-    public String getDTHPlans(String providerId) {
-        OkHttpClient client = okHttpClientProvider.getClient();
-
-        RequestBody requestBody = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("api_token", apiKey)
-                .addFormDataPart("provider_id", providerId)
-                .build();
-
-        Request request = new Request.Builder()
-                .url(baseURL+"/api/plan/v1/dth-plans")
-                .post(requestBody)
-                .addHeader("environment", environment)
-                .build();
-
-
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                log.error("Error: {} - {}", response.code(), response.message());
-                log.error("Response Body: {}", response.body().string());
-                return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
-            }
-            return response.body().string();
-        } catch (Exception e) {
-            log.error("Exception in API call: ", e);
-            return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
-        }
+    public ResponseEntity<?> getRofferPlan(String providerId, String mobileNo) {
+        System.out.println(mobileNo);
+        System.out.println("Before Call in Method: ");
+        return makePostRequest("/api/plan/v1/r-offer", Map.of(
+                "provider_id", providerId,
+                "mobile_number", mobileNo
+        ));
     }
 
+    public ResponseEntity<?> getDTHPlans(String providerId) {
+        return makePostRequest("/api/plan/v1/dth-plans", Map.of(
+                "provider_id", providerId
+        ));
+    }
 
     // ! This Method Gives Error
     // ! Even Curl also Gives Error
     // ? Might be the Server Side Problem. Need to be Monitor
+    public ResponseEntity<?> findOperator(String mobileNo) {
+        return makePostRequest("/api/plan/v1/find-operator", Map.of(
+                "mobile_number", mobileNo
+        ));
+    }
 
-    public String findOperator(String mobileNo) {
+    public ResponseEntity<?> getStateList() {
+        return makePostRequest("/api/application/v1/state-list", Map.of());
+    }
+
+    public ResponseEntity<?> getProvidersList() {
+        return makePostRequest("/api/application/v1/get-provider", Map.of());
+    }
+
+
+    // * Bill Payment
+    public ResponseEntity<? extends Object> processBillPayment(BillPaymentRequest request) {
+
         OkHttpClient client = okHttpClientProvider.getClient();
 
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("api_token", apiKey)
-                .addFormDataPart("mobile_number", mobileNo)
+                .addFormDataPart("provider_id", request.getProviderId())
+                .addFormDataPart("optional1", request.getOptional1()==null?"":request.getOptional1())
+                .addFormDataPart("optional2", request.getOptional2()==null?"":request.getOptional2())
+                .addFormDataPart("optional3", request.getOptional3()== null?"":request.getOptional3())
+                .addFormDataPart("optional4", request.getOptional4()==null?"":request.getOptional4())
+                .addFormDataPart("amount", request.getAmount())
+                .addFormDataPart("client_id", request.getClientId())
+                .addFormDataPart("type", "2")
+                .addFormDataPart("environment", environment)
                 .build();
 
-        Request request = new Request.Builder()
-                .url(baseURL+"/api/plan/v1/find-operator")
+        Request httpRequest = new Request.Builder()
+                .url(baseURL+"/api/telecom/v1/payment")
                 .post(requestBody)
                 .addHeader("environment", environment)
                 .build();
 
-
-        try (Response response = client.newCall(request).execute()) {
+        try (Response response = client.newCall(httpRequest).execute()) {
             if (!response.isSuccessful()) {
                 log.error("Error: {} - {}", response.code(), response.message());
-                log.error("Response Body: {}", response.body().string());
-                return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
+                ApiErrorResponse<JsonNode> errorResponse = new ApiErrorResponse<>(response.code(), "Request Failure", response.message(), null);
+                return ResponseEntity.status(response.code()).body(errorResponse);
             }
-            return response.body().string();
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            assert response.body() != null;
+            String responseBody = response.body().string();
+            JsonNode jsonNode = objectMapper.readTree(responseBody);
+            String payid = jsonNode.get("payid").asText();
+
+            return verifyBillPayment(request,"919999999999", "cash");
+
         } catch (Exception e) {
             log.error("Exception in API call: ", e);
-            return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
+            ApiErrorResponse<String> errorResponse = new ApiErrorResponse<>(500, "Internal Server Error", e.getMessage(),null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
-    public String getStateList() {
+
+    public ResponseEntity<? extends Object> verifyBillPayment(BillPaymentRequest request, String customerNumber,String paymentMode) {
+
         OkHttpClient client = okHttpClientProvider.getClient();
 
-        RequestBody requestBody = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("api_token", apiKey)
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(baseURL + "/api/telecom/v1/payment").newBuilder()
+                .addQueryParameter("api_token", apiKey)
+                .addQueryParameter("provider_id", request.getProviderId())
+                .addQueryParameter("number", customerNumber)
+                .addQueryParameter("optional1", request.getOptional1() == null ? "" : request.getOptional1())
+                .addQueryParameter("optional2", request.getOptional2() == null ? "" : request.getOptional2())
+                .addQueryParameter("optional3", request.getOptional3() == null ? "" : request.getOptional3())
+                .addQueryParameter("optional4", request.getOptional4() == null ? "" : request.getOptional4())
+                .addQueryParameter("amount", request.getAmount())
+                .addQueryParameter("client_id", request.getClientId())
+                .addQueryParameter("payment_mode", paymentMode)
+                .addQueryParameter("type", "2")
+                .addQueryParameter("environment", environment);
+
+
+        String finalUrl = urlBuilder.build().toString();  // Construct the final URL
+
+        // Build the GET request
+        Request httpRequest = new Request.Builder()
+                .url(finalUrl)
+                .get()  // GET request
+                .addHeader("environment", environment)  // Add required headers
                 .build();
 
-        Request request = new Request.Builder()
-                .url(baseURL+"/api/application/v1/state-list")
-                .post(requestBody)
-                .addHeader("environment", environment)
-                .build();
+        try (Response response = client.newCall(httpRequest).execute()) {
+            int statusCode = response.code();
+            String responseBody = response.body() != null ? response.body().string() : "";
 
+            JsonNode jsonData;
+            jsonData = objectMapper.readTree(responseBody);
 
-        try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                log.error("Error: {} - {}", response.code(), response.message());
-                log.error("Response Body: {}", response.body().string());
-                return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
+                log.error("Error: {} - {}", statusCode, response.message());
+                ApiErrorResponse<JsonNode> errorResponse = new ApiErrorResponse<>(response.code(), "Request Failure", response.message(), null);
+                return ResponseEntity.status(statusCode).body(errorResponse);
             }
-            return response.body().string();
+
+            ApiResponse<JsonNode> successResponse = new ApiResponse<>(statusCode, "Success", jsonData);
+
+            return ResponseEntity.status(statusCode).body(successResponse);
         } catch (Exception e) {
             log.error("Exception in API call: ", e);
-            return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
+            ApiErrorResponse<String> errorResponse = new ApiErrorResponse<>(500, "Internal Server Error", e.getMessage(),null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
-    // * Bill Payment Services
-
-    public String getProvidersList() {
-        OkHttpClient client = okHttpClientProvider.getClient();
-
-        RequestBody requestBody = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("api_token", apiKey)
-                .build();
-
-        Request request = new Request.Builder()
-                .url(baseURL+"/api/application/v1/get-provider")
-                .post(requestBody)
-                .addHeader("environment", environment)
-                .build();
 
 
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                log.error("Error: {} - {}", response.code(), response.message());
-                log.error("Response Body: {}", response.body().string());
-                return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
-            }
-            return response.body().string();
-        } catch (Exception e) {
-            log.error("Exception in API call: ", e);
-            return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
-        }
-    }
 
 }
 
@@ -429,6 +411,69 @@ public String getRofferPlan(String providerId, String mobileNo) {
 //    }
 //
 //
+
+
+
+//public String getPlansService1(String providerId,String stateId) {
+//
+//
+//    OkHttpClient client = okHttpClientProvider.getClient();
+//
+//    RequestBody formBody = new MultipartBody.Builder()
+//            .setType(MultipartBody.FORM)
+//            .addFormDataPart("api_token", apiKey)
+//            .addFormDataPart("provider_id", providerId)
+//            .addFormDataPart("state_id", stateId)
+//            .build();
+//
+//    Request request = new Request.Builder()
+//            .url(baseURL+"/api/plan/v1/prepaid-plan")
+//            .post(formBody)
+//            .addHeader("environment", environment)
+//            .addHeader("Accept", "application/json") // Optional header
+//            .build();
+//
+//    try (Response response = client.newCall(request).execute()) {
+//        if (!response.isSuccessful()) {
+//            log.error("Error: {} - {}", response.code(), response.message());
+//            return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
+//        }
+//        return response.body().string();
+//    } catch (Exception e) {
+//        log.error("Exception in API call: ", e);
+//        return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
+//    }
+//}
+//
+//public String getPlansService2(String providerId,String stateId) {
+//
+//    OkHttpClient client = okHttpClientProvider.getClient();
+//
+//    RequestBody formBody = new MultipartBody.Builder()
+//            .setType(MultipartBody.FORM)
+//            .addFormDataPart("api_token", apiKey)
+//            .addFormDataPart("provider_id", providerId)
+//            .addFormDataPart("state_id", stateId)
+//            .build();
+//
+//    Request request = new Request.Builder()
+//            .url(baseURL+"/api/plan/v1/prepaid-plan2")
+//            .post(formBody)
+//            .addHeader("environment", environment)
+//            .addHeader("Accept", "application/json") // Optional header
+//            .build();
+//
+//    try (Response response = client.newCall(request).execute()) {
+//        if (!response.isSuccessful()) {
+//            log.error("Error: {} - {}", response.code(), response.message());
+//            return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
+//        }
+//        return response.body().string();
+//    } catch (Exception e) {
+//        log.error("Exception in API call: ", e);
+//        return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
+//    }
+//}
 //
 //
 //
@@ -467,3 +512,159 @@ public String getRofferPlan(String providerId, String mobileNo) {
 //            log.error("Exception in Callback API call: ", e);
 //        }
 //    }
+
+
+
+
+
+//public String getRofferPlan(String providerId, String mobileNo) {
+//    OkHttpClient client = okHttpClientProvider.getClient();
+//
+//    RequestBody requestBody = new MultipartBody.Builder()
+//            .setType(MultipartBody.FORM)
+//            .addFormDataPart("api_token", apiKey)
+//            .addFormDataPart("provider_id", providerId)
+//            .addFormDataPart("mobile_number", mobileNo)
+//            .build();
+//
+//    // Creating the request
+//    Request request = new Request.Builder()
+//            .url(baseURL+"/api/plan/v1/r-offer")
+//            .post(requestBody)
+//            .addHeader("environment", environment)
+//            .build();
+//
+//
+//    try (Response response = client.newCall(request).execute()) {
+//        if (!response.isSuccessful()) {
+//            log.error("Error: {} - {}", response.code(), response.message());
+//            log.error("Response Body: {}", response.body().string());
+//            return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
+//        }
+//        return response.body().string();
+//    } catch (Exception e) {
+//        log.error("Exception in API call: ", e);
+//        return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
+//    }
+//}
+//
+//public String getDTHPlans(String providerId) {
+//    OkHttpClient client = okHttpClientProvider.getClient();
+//
+//    RequestBody requestBody = new MultipartBody.Builder()
+//            .setType(MultipartBody.FORM)
+//            .addFormDataPart("api_token", apiKey)
+//            .addFormDataPart("provider_id", providerId)
+//            .build();
+//
+//    Request request = new Request.Builder()
+//            .url(baseURL+"/api/plan/v1/dth-plans")
+//            .post(requestBody)
+//            .addHeader("environment", environment)
+//            .build();
+//
+//
+//    try (Response response = client.newCall(request).execute()) {
+//        if (!response.isSuccessful()) {
+//            log.error("Error: {} - {}", response.code(), response.message());
+//            log.error("Response Body: {}", response.body().string());
+//            return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
+//        }
+//        return response.body().string();
+//    } catch (Exception e) {
+//        log.error("Exception in API call: ", e);
+//        return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
+//    }
+//}
+//
+//
+//// ! This Method Gives Error
+//// ! Even Curl also Gives Error
+//// ? Might be the Server Side Problem. Need to be Monitor
+
+//public String findOperator(String mobileNo) {
+//    OkHttpClient client = okHttpClientProvider.getClient();
+//
+//    RequestBody requestBody = new MultipartBody.Builder()
+//            .setType(MultipartBody.FORM)
+//            .addFormDataPart("api_token", apiKey)
+//            .addFormDataPart("mobile_number", mobileNo)
+//            .build();
+//
+//    Request request = new Request.Builder()
+//            .url(baseURL+"/api/plan/v1/find-operator")
+//            .post(requestBody)
+//            .addHeader("environment", environment)
+//            .build();
+//
+//
+//    try (Response response = client.newCall(request).execute()) {
+//        if (!response.isSuccessful()) {
+//            log.error("Error: {} - {}", response.code(), response.message());
+//            log.error("Response Body: {}", response.body().string());
+//            return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
+//        }
+//        return response.body().string();
+//    } catch (Exception e) {
+//        log.error("Exception in API call: ", e);
+//        return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
+//    }
+//}
+//
+//public String getStateList() {
+//    OkHttpClient client = okHttpClientProvider.getClient();
+//
+//    RequestBody requestBody = new MultipartBody.Builder()
+//            .setType(MultipartBody.FORM)
+//            .addFormDataPart("api_token", apiKey)
+//            .build();
+//
+//    Request request = new Request.Builder()
+//            .url(baseURL+"/api/application/v1/state-list")
+//            .post(requestBody)
+//            .addHeader("environment", environment)
+//            .build();
+//
+//
+//    try (Response response = client.newCall(request).execute()) {
+//        if (!response.isSuccessful()) {
+//            log.error("Error: {} - {}", response.code(), response.message());
+//            log.error("Response Body: {}", response.body().string());
+//            return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
+//        }
+//        return response.body().string();
+//    } catch (Exception e) {
+//        log.error("Exception in API call: ", e);
+//        return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
+//    }
+//}
+//
+//// * Bill Payment Services
+//
+//public String getProvidersList() {
+//    OkHttpClient client = okHttpClientProvider.getClient();
+//
+//    RequestBody requestBody = new MultipartBody.Builder()
+//            .setType(MultipartBody.FORM)
+//            .addFormDataPart("api_token", apiKey)
+//            .build();
+//
+//    Request request = new Request.Builder()
+//            .url(baseURL+"/api/application/v1/get-provider")
+//            .post(requestBody)
+//            .addHeader("environment", environment)
+//            .build();
+//
+//
+//    try (Response response = client.newCall(request).execute()) {
+//        if (!response.isSuccessful()) {
+//            log.error("Error: {} - {}", response.code(), response.message());
+//            log.error("Response Body: {}", response.body().string());
+//            return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
+//        }
+//        return response.body().string();
+//    } catch (Exception e) {
+//        log.error("Exception in API call: ", e);
+//        return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
+//    }
+//}

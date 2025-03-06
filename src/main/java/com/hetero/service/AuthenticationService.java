@@ -1,13 +1,13 @@
 package com.hetero.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hetero.exception.JWTTokenNotValid;
 import com.hetero.models.Role;
 import com.hetero.models.Token;
 import com.hetero.repository.TokenDao;
 import com.hetero.repository.UserDao;
 import com.hetero.models.User;
 import com.hetero.models.AuthenticationResponse;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +25,8 @@ import java.util.List;
 
 /**
  *  If you want to modify the username password change the Email and mPin in Users Model
- *
  *  Also made change in Authentication Service findByEmail(request.getUsername()).isPresent()
- *
  *  and modify loadByUser in  JwtAuthenticationFilter
- *
  */
 
 @Service
@@ -168,14 +165,13 @@ public class AuthenticationService {
         tokenRepository.save(token);
     }
 
-    public ResponseEntity<?> refreshToken(
-            HttpServletRequest request,
-            HttpServletResponse response) {
+    public AuthenticationResponse refreshToken(
+            HttpServletRequest request) {
         // extract the token from authorization header
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+          throw new JWTTokenNotValid("Unauthorized. Token not valid");
         }
 
         String token = authHeader.substring(7);
@@ -196,10 +192,10 @@ public class AuthenticationService {
             revokeAllTokenByUser(user);
             saveUserToken(accessToken, refreshToken, user);
 
-            return new ResponseEntity<>(new AuthenticationResponse(accessToken, refreshToken, user, "New token generated"), HttpStatus.OK);
+            return new AuthenticationResponse(accessToken, refreshToken, user, "New token generated");
         }
 
-        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        throw new JWTTokenNotValid("Token is Not Valid");
 
     }
 }

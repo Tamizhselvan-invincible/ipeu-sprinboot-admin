@@ -3,13 +3,12 @@ package com.hetero.controller;
 import com.hetero.models.AuthenticationResponse;
 import com.hetero.models.User;
 import com.hetero.service.AuthenticationService;
-import com.hetero.utils.ApiErrorResponse;
 import com.hetero.utils.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
+
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,8 +30,8 @@ public class AuthenticationController {
         if (request.getmPin() == null || request.getmPin().isEmpty()) {
             throw new IllegalArgumentException("M-PIN cannot be null or empty");
         }
-        ApiResponse<AuthenticationResponse> response = new ApiResponse<>(200,"User Authenticated",authService.register(request));
-        return ResponseEntity.ok().body(response);
+        ApiResponse<AuthenticationResponse> response = new ApiResponse<>(202,"User Authenticated",authService.register(request));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
 //    @GetMapping("/login")
@@ -48,10 +47,12 @@ public class AuthenticationController {
 //    }
 
     @PostMapping("/refresh_token")
-    public ResponseEntity refreshToken(
-            HttpServletRequest request,
-            HttpServletResponse response
+    public ResponseEntity<?> refreshToken(
+            HttpServletRequest request
     ) {
-        return authService.refreshToken(request, response);
+        ApiResponse<AuthenticationResponse> response = new ApiResponse<>(202,"Token Refreshed",authService.refreshToken(request));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
+
+
 }

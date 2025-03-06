@@ -42,6 +42,7 @@ public class PSDigitalGoldService {
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = jsonBody != null ? RequestBody.create(mediaType, jsonBody) : RequestBody.create("", mediaType);
 
+        log.atInfo().log(body.toString());
         Request request = new Request.Builder()
                 .url(baseUrl + endpoint)
                 .post(body)
@@ -49,7 +50,10 @@ public class PSDigitalGoldService {
                 .addHeader("Token", token)
                 .addHeader("Authorisedkey", authorizedKey)
                 .addHeader("content-type", "application/json")
+                .addHeader("ENVIORMENT","UAT")
                 .build();
+
+        log.atInfo().log(request.toString());
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
@@ -64,7 +68,6 @@ public class PSDigitalGoldService {
     }
 
     // * Get Profile Details
-
     public  String getProfile(long mobileNo){
         String jsonBody = String.format("{\"mobileNo\":%d}", mobileNo);
         return makeApiCall("/service-api/api/v1/service/digitalgold/customer/get_profile", jsonBody);
@@ -76,8 +79,38 @@ public class PSDigitalGoldService {
             // Convert DTO to JSON
             String jsonBody = objectMapper.writeValueAsString(requestDto);
 
-            // Call API
-            return makeApiCall("/service-api/api/v1/service/digitalgold/customer/create", jsonBody);
+            String token = paySprintJWTGenerator.getToken(); // Generate token on each call
+            OkHttpClient client = okHttpClientProvider.getClient();
+
+            MediaType mediaType = MediaType.parse("application/json");
+            RequestBody body = jsonBody != null ? RequestBody.create(mediaType, jsonBody) : RequestBody.create("", mediaType);
+
+            log.atInfo().log(body.toString());
+            Request request = new Request.Builder()
+                    .url(baseUrl + "/service-api/api/v1/service/digitalgold/customer/create")
+                    .post(body)
+                    .addHeader("accept", "application/json")
+                    .addHeader("Token", token)
+                    .addHeader("Authorisedkey", authorizedKey)
+                    .addHeader("content-type", "application/json")
+                    .addHeader("ENVIORMENT","UAT")
+                    .addHeader("environment","UAT")
+                    .addHeader("ENVIRONMENT","UAT")
+                    .build();
+
+
+            try (Response response = client.newCall(request).execute()) {
+//                if (!response.isSuccessful()) {
+//                    log.error("Error: {} - {} : Something fucked", response.code(), response.message());
+//                    log.error("Response: {}", response.body().string());
+//                    return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
+//                }
+                assert response.body() != null;
+                return response.body().string();
+            } catch (Exception e) {
+                log.error("Exception in API call: ", e);
+                return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
+            }
         } catch (Exception e) {
             log.error("Error while converting DTO to JSON", e);
             return "{\"error_code\": 500, \"error_message\": \"Failed to serialize request\"}";
@@ -136,12 +169,26 @@ public class PSDigitalGoldService {
         return makeApiCall("/service-api/api/v1/service/digitalgold/trade/validate_quote",jsonBody);
     }
 
+    //* Send OTP
 
+    public String sendOTPToCustomer(String refId,String customerId,String billingAddressId,String quoteId){
+        String jsonBody  = String.format("{\"refid\":\"%s\",\"customer_id\":\"%s\",\"billing_address_id\":\"%s\",\"quote_id\":\"%s\"}",refId,customerId,billingAddressId,quoteId);
+        return makeApiCall("/service-api/api/v1/service/digitalgold/trade/send_otp",jsonBody);
+    }
 
+    //* Buy Execute
 
+    public String buyExecute(String refId,String customerId,String billingAddressId,String quoteId,String stateResp,Double otp){
+        String jsonBody  = String.format("{\"otp\":%s,\"stateresp\":\"%s\",\"quote_id\":\"%s\",\"customer_id\":\"%s\",\"billing_address_id\":\"%s\",\"refid\":\"%s\"}",otp, stateResp,quoteId,customerId,billingAddressId,refId);
+        return makeApiCall("/service-api/api/v1/service/digitalgold/trade/buyexecute",jsonBody);
+    }
 
+    //* Transaction Status
 
-
+    public String transactionStatus(String refId){
+        String jsonBody  = String.format( "{\"refid\":\"%s\"}",refId);
+        return makeApiCall("/service-api/api/v1/service/digitalgold/trade/status",jsonBody);
+    }
 
 
 }

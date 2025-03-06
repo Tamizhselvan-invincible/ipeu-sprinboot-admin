@@ -4,25 +4,27 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hetero.models.*;
+import com.hetero.models.telecom.BillPaymentRequest;
 import com.hetero.service.TelecomScrizaAPIService;
 import com.hetero.service.TransactionService;
 import com.hetero.service.UserService;
 import com.hetero.utils.ApiErrorResponse;
 import com.hetero.utils.ApiResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/telecom")
 public class TeleComController {
 
+    private static final Logger log = LoggerFactory.getLogger(TeleComController.class);
     @Autowired
     TelecomScrizaAPIService telecomService;
 
@@ -42,7 +44,7 @@ public class TeleComController {
         return ResponseEntity.ok(telecomService.getBalanceAmount());
     }
 
-    @PostMapping("/payment")
+    @PostMapping("/recharge-payment")
     public ResponseEntity<?> processRecharge(
             @RequestParam String mobileNo,
             @RequestParam String amount,
@@ -102,54 +104,62 @@ public class TeleComController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(apiResponse);
     }
 
-    /** Recharge Plan End Points */
 
+
+    /** Recharge Plan End Points */
     @PostMapping("/prepaid_plans")
-    public ResponseEntity<String> getPrepaidPlansFromAPIService1(
+    public ResponseEntity<?> getPrepaidPlansFromAPIService1(
             @RequestParam String providerId,
             @RequestParam String stateId) {
 
-        return ResponseEntity.ok(telecomService.getPlansService1(providerId,stateId));
+        return telecomService.getPlansService1(providerId,stateId);
     }
 
     @PostMapping("/prepaid_plans2")
-    public ResponseEntity<String> getPrepaidPlansFromAPIService2(
+    public ResponseEntity<?> getPrepaidPlansFromAPIService2(
             @RequestParam String providerId,
             @RequestParam String stateId) {
 
-        return ResponseEntity.ok(telecomService.getPlansService2(providerId,stateId));
+        return telecomService.getPlansService2(providerId,stateId);
     }
 
     @PostMapping("/r-offer")
-    public ResponseEntity<String> getRofferPlanFromService(
+    public ResponseEntity<?> getRofferPlanFromService(
             @RequestParam String providerId,
             @RequestParam String mobileNo) {
-        return ResponseEntity.ok(telecomService.getRofferPlan(providerId,mobileNo));
+
+        System.out.println("Before Call in Controller: ");
+        return telecomService.getRofferPlan(providerId,mobileNo);
     }
 
     @PostMapping("/dth-plans")
-    public ResponseEntity<String> getDTHPlanFromService(
+    public ResponseEntity<?> getDTHPlanFromService(
             @RequestParam String providerId) {
-        return ResponseEntity.ok(telecomService.getDTHPlans(providerId));
+        return telecomService.getDTHPlans(providerId);
     }
 
     @PostMapping("/find-operator")
-    public ResponseEntity<String> getOperatorFromService(
+    public ResponseEntity<?> getOperatorFromService(
             @RequestParam String mobileNo) {
-        return ResponseEntity.ok(telecomService.findOperator(mobileNo));
+        return telecomService.findOperator(mobileNo);
     }
 
     @PostMapping("/state-list")
-    public ResponseEntity<String> getStateListFromService() {
-        return ResponseEntity.ok(telecomService.getStateList());
+    public ResponseEntity<?> getStateListFromService() {
+        return telecomService.getStateList();
     }
 
 
     /* ** Bill Payment End Points */
 
     @PostMapping("/get-provider")
-    public ResponseEntity<String> getProvidersListFormService() {
-        return ResponseEntity.ok(telecomService.getProvidersList());
+    public ResponseEntity<?> getProvidersListFormService() {
+        return  telecomService.getProvidersList();
+    }
+
+    @PostMapping("/bill-payment")
+    public ResponseEntity<?> makePayment(@RequestBody BillPaymentRequest request) throws IOException {
+       return telecomService.processBillPayment(request);
     }
 
 

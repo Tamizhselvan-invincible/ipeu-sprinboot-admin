@@ -3,6 +3,9 @@ package com.hetero.service;
 import com.hetero.models.User;
 import com.hetero.repository.TokenDao;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.security.SignatureException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class JwtService {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtService.class);
     @Value("${application.security.jwt.secret-key}")
     private String secretKey;
 
@@ -46,10 +50,6 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-
-
-
-
     @Transactional
     public boolean isValid(String token, UserDetails user) {
         String username = extractUsername(token);
@@ -57,7 +57,7 @@ public class JwtService {
         boolean validToken = tokenRepository
                 .findByAccessToken(token)
                 .map(t ->{
-                        System.out.println("Token Found: " + t.getAccessToken()); // Debug log
+//                        System.out.println("Token Found: " + t.getAccessToken()); // Debug log
                        return  !t.isLoggedOut();
                 })
                 .orElse(false);
@@ -91,6 +91,7 @@ public class JwtService {
     public <T> T extractClaim(String token, Function<Claims, T> resolver) {
         Claims claims = extractAllClaims(token);
         if (claims == null) {
+            log.error("Claims are missing");
             throw new JwtException("Invalid or missing JWT token"); // Handle it properly
         }
         return resolver.apply(claims);
@@ -104,11 +105,13 @@ public class JwtService {
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
+        } catch (SignatureException e) {
+            throw new JwtException("Invalid JWT signature", e);
         } catch (Exception e) {
-            System.out.println("JWT Parsing Failed: " + e.getMessage());
-            return null;
+            throw new JwtException("Failed to parse JWT", e);
         }
     }
+
 
 
     public String generateAccessToken(User user) {
@@ -127,7 +130,6 @@ public class JwtService {
                 .expiration(new Date(System.currentTimeMillis() + expireTime ))
                 .signWith(getSigninKey())
                 .compact();
-        System.out.println("Generated Token: " + token);
 
         return token;
     }

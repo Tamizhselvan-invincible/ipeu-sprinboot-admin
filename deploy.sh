@@ -10,6 +10,6 @@ echo "🔨 Building new Docker image..."
 docker compose build
 
 echo "🚀 Starting Docker containers..."
-docker compose up -d
+docker compose  --env-file docker-compose.env up -d
 
 echo "✅ Deployment completed!"

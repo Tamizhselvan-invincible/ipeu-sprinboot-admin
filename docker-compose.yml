@@ -1,22 +1,32 @@
-version: '3.8'
 
 services:
   backend:
     image: ipeyu-backend-admin  # The image name from your Docker build
     build: .  # Builds from the Dockerfile in the current directory
-    container_name: ipeyu-backend
+    container_name: iPeyU-backend
     ports:
       - "8008:8008"  # Map container port 8008 to host port 8008
     depends_on:
       mysql : # Ensures MySQL starts first
         condition: service_healthy  # Ensure MySQL is fully running
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ipeyudb_docker
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=root
+      - SERVER_PORT=8008
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - AES_ENCRYPTION_KEY=${AES_ENCRYPTION_KEY}
+      - JWT_ACCESS_TOKEN_EXPIRATION=${JWT_ACCESS_TOKEN_EXPIRATION}
+      - JWT_REFRESH_TOKEN_EXPIRATION=${JWT_REFRESH_TOKEN_EXPIRATION}
+      - PAY_SPRINT_BASE_URL=${PAY_SPRINT_BASE_URL}
+      - PAY_SPRINT_JWT_KEY=${PAY_SPRINT_JWT_KEY}
+      - PAY_SPRINT_AUTHORIZED_KEY=${PAY_SPRINT_AUTHORIZED_KEY}
+      - PAY_SPRINT_PARTNER_ID=${PAY_SPRINT_PARTNER_ID}
+      - SCRIZA_BASE_URL=${SCRIZA_BASE_URL}
+      - SCRIZA_API_TOKEN=${SCRIZA_API_TOKEN}
     restart: always
     volumes:
-      - ./target/iPeyu-Backend-admin-0.0.1-SNAPSHOT.jar:/app/app.jar  # Mount JAR file
+      - ./target/iPeyu-Backend-admin-1.1.0.jar:/app/app.jar  # Mount JAR file
 
   mysql:
     image: mysql:8.0
