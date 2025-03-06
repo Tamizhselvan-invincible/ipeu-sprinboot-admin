@@ -49,10 +49,10 @@ jobs:
           echo "SCRIZA_API_TOKEN=${{ secrets.SCRIZA_API_TOKEN }}" >> .env
 
       - name: Pull Latest Docker Image
-        run: docker pull heterophyllustechnologyllp/ipeyu-backend-admin:latest
+        run: sudo docker pull heterophyllustechnologyllp/ipeyu-backend-admin:latest
 
       - name: Delete Old Docker Container
-        run: docker rm -f ipeyu-backend-admin-container || true
+        run: sudo docker rm -f ipeyu-backend-admin-container || true
 
       - name: Run Docker Container
-        run: docker run --pull always -d -p 8009:8008 --env-file .env --name ipeyu-backend-admin-container heterophyllustechnologyllp/ipeyu-backend-admin
+        run: sudo docker run --pull always -d -p 8009:8008 --env-file .env --name ipeyu-backend-admin-container heterophyllustechnologyllp/ipeyu-backend-admin
