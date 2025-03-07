@@ -69,7 +69,6 @@ jobs:
         run: docker rm -f ipeyu-backend-admin-container || true
 
       - name: Run Docker Container
-        run:  docker run -d --name ipeyu-backend-admin-container \
-             --env-file .env -p 8009:8008 heterophyllustechnologyllp/ipeyu-backend-admin:latest
+        run:  docker run -d --name ipeyu-backend-admin-container --env-file .env -p 8009:8008 heterophyllustechnologyllp/ipeyu-backend-admin:latest
 
 
