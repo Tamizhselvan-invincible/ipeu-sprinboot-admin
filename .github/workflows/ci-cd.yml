@@ -63,11 +63,11 @@ jobs:
           echo "SCRIZA_API_TOKEN=${{ secrets.SCRIZA_API_TOKEN }}" >> .env
 
       - name: Pull Latest Docker Image
-        run: sudo docker pull heterophyllustechnologyllp/ipeyu-backend-admin:latest
+        run: docker pull heterophyllustechnologyllp/ipeyu-backend-admin:latest
 
       - name: Delete Old Docker Container
-        run: sudo docker rm -f ipeyu-backend-admin-container || true
+        run: docker rm -f ipeyu-backend-admin-container || true
 
       - name: Run Docker Container
-        run: sudo docker-compose up -d --build
+        run: docker-compose up -d --build
 
