@@ -138,7 +138,7 @@ public class TelecomScrizaAPIService {
     }
 
 
-    public  String getBalanceAmount(){
+    public  ResponseEntity<?> getBalanceAmount(){
 
         String url = baseURL+"/api/telecom/v1/check-balance?api_token="+apiKey;
 
@@ -150,14 +150,12 @@ public class TelecomScrizaAPIService {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                log.error("Error: {} - {}", response.code(), response.message());
-                return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
-            }
-            return response.body().string();
+
+            return getResponseEntityFromResponse(response);
         } catch (Exception e) {
             log.error("Exception in API call: ", e);
-            return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
+            ApiErrorResponse<String> errorResponse = new ApiErrorResponse<>(500, "Internal Server Error", e.getMessage(),null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
@@ -193,7 +191,7 @@ public class TelecomScrizaAPIService {
                 return ResponseEntity.status(statusCode).body(errorResponse);
             }
 
-            ApiResponse<JsonNode> successResponse = new ApiResponse<>(statusCode, "Success", jsonData);
+            ApiResponse<JsonNode> successResponse = new ApiResponse<>(statusCode, response.message(), jsonData);
 
             return ResponseEntity.status(statusCode).body(successResponse);
         } catch (Exception e) {
@@ -353,7 +351,30 @@ public class TelecomScrizaAPIService {
     }
 
 
+    public ResponseEntity<?> getResponseEntityFromResponse(Response response) {
 
+        try{
+            int statusCode = response.code();
+            String responseBody = response.body() != null ? response.body().string() : "";
+
+            JsonNode jsonData;
+            jsonData = objectMapper.readTree(responseBody);
+
+            if (!response.isSuccessful()) {
+                log.error("Error: {} - {}", statusCode, response.message());
+                ApiResponse<JsonNode> errorResponse = new ApiResponse<>(statusCode, response.message(), jsonData);
+                return ResponseEntity.status(statusCode).body(errorResponse);
+            }
+
+            ApiResponse<JsonNode> successResponse = new ApiResponse<>(statusCode, "Success", jsonData);
+
+            return ResponseEntity.status(statusCode).body(successResponse);
+        } catch (Exception e) {
+            log.error("Exception in API call: ", e);
+            ApiErrorResponse<String> errorResponse = new ApiErrorResponse<>(500, "Internal Server Error", e.getMessage(),null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
 
 }
 

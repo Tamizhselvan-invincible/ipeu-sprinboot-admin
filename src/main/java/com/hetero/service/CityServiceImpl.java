@@ -16,12 +16,16 @@ public class CityServiceImpl implements CityService {
     @Autowired
     CityDao cityDao;
 
-    public void saveCitiesFromJson(String jsonResponse) {
+    public boolean saveCitiesFromJson(String jsonResponse) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode rootNode = objectMapper.readTree(jsonResponse);
-            JsonNode citiesNode = rootNode.path("data").path("cities");
+            JsonNode citiesNode = rootNode.path("data").path("data").path("cities");
 
+            if (citiesNode.isMissingNode()) {
+                System.out.println("Cities data not found!");
+                return false;
+            }
             List<City> cityList = new ArrayList<>();
 
             for (JsonNode cityNode : citiesNode) {
@@ -39,8 +43,11 @@ public class CityServiceImpl implements CityService {
 
             cityDao.saveAll(cityList);
 
+            return true;
+
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 

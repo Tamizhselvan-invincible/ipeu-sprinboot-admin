@@ -40,8 +40,8 @@ public class TeleComController {
     /** * Mobile DTH End Points */
 
     @PostMapping("/balance")
-    public ResponseEntity<String> getBalanceFromAPIService(){
-        return ResponseEntity.ok(telecomService.getBalanceAmount());
+    public ResponseEntity<?> getBalanceFromAPIService(){
+        return telecomService.getBalanceAmount();
     }
 
     @PostMapping("/recharge-payment")
@@ -73,6 +73,7 @@ public class TeleComController {
             String payId = jsonData.get("payid").asText();
 
             SubscriptionPlan subscriptionPlan = new SubscriptionPlan();
+
 
             subscriptionPlan.setAmount(BigDecimal.valueOf(Double.parseDouble(amount)));
 

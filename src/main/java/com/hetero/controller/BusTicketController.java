@@ -9,6 +9,7 @@ import com.hetero.models.bus.BlockTicketRequest;
 import com.hetero.models.bus.TripRequest;
 import com.hetero.service.CityService;
 import com.hetero.service.PSBusTicketBookingService;
+import com.hetero.utils.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,59 +32,62 @@ public class BusTicketController {
 
 
     @GetMapping("/cities")
-    public ResponseEntity<List<City>> getCitiesFromService() {
-        return ResponseEntity.ok(cityService.getCities());
+    public ResponseEntity<?> getCitiesFromService() {
+        ApiResponse<List<City>> apiResponse = new ApiResponse<>(HttpStatus.ACCEPTED.value(), "Cities Fetched From Database",cityService.getCities());
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(apiResponse);
     }
 
     @PostMapping("/cities/save")
-    public ResponseEntity<?> saveCities() {
-        String response = busTicketBookingService.getSourceCities();
-        return handleApiResponse(response, () -> {
-            cityService.saveCitiesFromJson(response);
-            return ResponseEntity.ok("Cities saved successfully!");
-        });
+    public ResponseEntity<?> saveCities() throws JsonProcessingException {
+        ResponseEntity<?> response = busTicketBookingService.getSourceCities();
+        if (response.getBody() instanceof Map) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            String jsonResponse = objectMapper.writeValueAsString(response.getBody());
+            cityService.saveCitiesFromJson(jsonResponse);
+        } else if (response.getBody() instanceof String) {
+            cityService.saveCitiesFromJson(response.getBody().toString());
+        }
+        ApiResponse<String> apiResponse = new ApiResponse<>(HttpStatus.ACCEPTED.value(),"\"Cities saved successfully!\"", null);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(apiResponse);
     }
 
     @PostMapping("/availabletrips")
     public ResponseEntity<?> getAvailableTrips(@RequestBody TripRequest tripRequest) {
-        String response = busTicketBookingService.getAvailableTrips(
+
+        System.out.println(tripRequest.toString());
+        return busTicketBookingService.getAvailableTrips(
                 tripRequest.getSourceId(), tripRequest.getDestinationId(),
                 new SimpleDateFormat("yyyy-MM-dd").format(tripRequest.getDateOfJourney()));
-        return handleApiResponse(response);
+
     }
 
     @PostMapping("/tripdetails")
     public ResponseEntity<?> getTripDetailsFromService(@RequestParam Long tripId) {
-        String response = busTicketBookingService.getCurrentTripDetails(tripId);
-        return handleApiResponse(response);
+        return busTicketBookingService.getCurrentTripDetails(tripId);
     }
 
     @PostMapping("/boardingDetails")
     public ResponseEntity<?> getBoardingDetailsFromService(@RequestParam Long boardingId, @RequestParam Long tripId) {
-        String response = busTicketBookingService.getBoardingPointDetails(boardingId, tripId);
-        return handleApiResponse(response);
+        return busTicketBookingService.getBoardingPointDetails(boardingId, tripId);
     }
 
     @PostMapping("/block-ticket")
     public ResponseEntity<?> blockTicketFromService(@RequestBody BlockTicketRequest request) throws JsonProcessingException {
-        String response = busTicketBookingService.blockTicket(request);
-        return handleApiResponse(response);
+        return busTicketBookingService.blockTicket(request);
     }
 
     @PostMapping("/book-ticket")
     public ResponseEntity<?> bookTicketFromService(@RequestParam Long refId, @RequestParam Long amount) {
-        String response = busTicketBookingService.bookTicket(refId, amount);
-        return handleApiResponse(response);
+        return  busTicketBookingService.bookTicket(refId, amount);
     }
     @PostMapping("/check-booked-ticket")
     public ResponseEntity<?> checkBookedTicketFromService(@RequestParam Long refId) {
-        String response = busTicketBookingService.checkBookedTicket(refId);
-        return handleApiResponse(response);
+        return busTicketBookingService.checkBookedTicket(refId);
+
     }
     @PostMapping("/get-booked-ticket")
     public ResponseEntity<?> getBookedTicketFromService(@RequestParam Long refId) {
-        String response = busTicketBookingService.getBookedTicket(refId);
-        return handleApiResponse(response);
+        return busTicketBookingService.getBookedTicket(refId);
     }
 
     @PostMapping("/cancellation-ticket-data")
@@ -91,8 +95,7 @@ public class BusTicketController {
             @RequestParam Long refId,
             @RequestBody Map<Integer, String> seatsToCancel) {
 
-        String response = busTicketBookingService.getCancellationTicketData(refId);
-        return handleApiResponse(response);
+        return busTicketBookingService.getCancellationTicketData(refId);
     }
 
     @PostMapping("/cancel-ticket")
@@ -100,31 +103,12 @@ public class BusTicketController {
             @RequestParam Long refId,
             @RequestBody Map<Integer, String> seatsToCancel) {
 
-        String response = busTicketBookingService.cancelTicket(refId, seatsToCancel);
-        return handleApiResponse(response);
+       return busTicketBookingService.cancelTicket(refId, seatsToCancel);
     }
 
 
 
 
-    private ResponseEntity<?> handleApiResponse(String response) {
-        return handleApiResponse(response, () -> ResponseEntity.ok(response));
-    }
-
-    private ResponseEntity<?> handleApiResponse(String response, Supplier<ResponseEntity<?>> successHandler) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonNode = objectMapper.readTree(response);
-            if (jsonNode.has("error_code")) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(jsonNode.toString());
-            }
-            return successHandler.get();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"error_code\": 500, \"error_message\": \"Invalid JSON response\"}");
-        }
-    }
 }
 
 //@RestController

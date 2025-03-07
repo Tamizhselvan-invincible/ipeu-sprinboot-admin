@@ -27,4 +27,5 @@ public class NotificationController {
         return new ResponseEntity<>(new PushNotificationResponse(HttpStatus.OK.value(), "Notification has been sent."), HttpStatus.OK);
     }
 
+
 }

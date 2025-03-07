@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface CityService {
 
-    void saveCitiesFromJson(String jsonResponse);
+    boolean saveCitiesFromJson(String jsonResponse);
 
     List<City> getCities();
 }
