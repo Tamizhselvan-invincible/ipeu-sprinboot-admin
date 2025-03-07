@@ -9,7 +9,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Check Out Sources
+        uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Create Firebase Configuration File
+        run: |
+          echo "${{ secrets.FIREBASE_CONFIG_FILE }}" | base64 --decode > ipeyu-firebase-admin-sdk.json
 
       - name: Login to Docker Hub
         env:
@@ -17,8 +27,12 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
+
+      - name: Build the Spring Boot application
+        run: mvn clean package -DskipTests
+
       - name: Build the Docker image
-        run: docker build -t heterophyllustechnologyllp/ipeyu-backend-admin:latest .
+        run: docker build --build-arg JAR_FILE=target/iPeyu-Backend-admin-1.1.0.jar -t heterophyllustechnologyllp/ipeyu-backend-admin:latest .
 
       - name: Verify Image Exists
         run: docker images
@@ -55,4 +69,5 @@ jobs:
         run: sudo docker rm -f ipeyu-backend-admin-container || true
 
       - name: Run Docker Container
-        run: sudo docker run --pull always -d -p 8009:8008 --env-file .env --name ipeyu-backend-admin-container heterophyllustechnologyllp/ipeyu-backend-admin
+        run: sudo docker-compose up -d --build
+
