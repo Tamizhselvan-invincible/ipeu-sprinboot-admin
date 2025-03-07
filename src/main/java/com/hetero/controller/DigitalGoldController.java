@@ -40,17 +40,17 @@ public class DigitalGoldController {
     @PostMapping("/profile/create")
     public ResponseEntity<?> createProfileForDigitalGoldFromService(@RequestBody DigitalGoldProfileCreateRequest requestDto){
 
-        String data = digitalGoldService.createProfileForDigitalGold(requestDto);
-        JsonNode jsonData;
-        try {
-            jsonData = objectMapper.readTree(data);
-        } catch (JsonProcessingException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(500, "Error parsing JSON", null));
-        }
-
-        ApiResponse<JsonNode> apiResponse = new ApiResponse<>(200, "Profile Created", jsonData);
-        return ResponseEntity.ok().body(apiResponse);
+        return digitalGoldService.createProfileForDigitalGold(requestDto);
+//        JsonNode jsonData;
+//        try {
+//            jsonData = objectMapper.readTree(data);
+//        } catch (JsonProcessingException e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body(new ApiResponse<>(500, "Error parsing JSON", null));
+//        }
+//
+//        ApiResponse<JsonNode> apiResponse = new ApiResponse<>(200, "Profile Created", jsonData);
+//        return ResponseEntity.ok().body(apiResponse);
     }
 
     @PostMapping("/balance")

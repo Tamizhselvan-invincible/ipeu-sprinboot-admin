@@ -1,15 +1,20 @@
 package com.hetero.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hetero.models.digigold.DigitalGoldProfileCreateRequest;
 import com.hetero.models.digigold.DigitalGoldProfileUpdateRequest;
 import com.hetero.security.PaySprintJWTGenerator;
+import com.hetero.utils.ApiErrorResponse;
+import com.hetero.utils.ApiResponse;
 import com.hetero.utils.OkHttpClientProvider;
 import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -74,7 +79,7 @@ public class PSDigitalGoldService {
     }
 
     //  *  Create Profile for Digital Gold  Account Creation
-    public String createProfileForDigitalGold(DigitalGoldProfileCreateRequest requestDto) {
+    public ResponseEntity<?> createProfileForDigitalGold(DigitalGoldProfileCreateRequest requestDto) {
         try {
             // Convert DTO to JSON
             String jsonBody = objectMapper.writeValueAsString(requestDto);
@@ -98,22 +103,32 @@ public class PSDigitalGoldService {
                     .addHeader("ENVIRONMENT","UAT")
                     .build();
 
-
             try (Response response = client.newCall(request).execute()) {
-//                if (!response.isSuccessful()) {
-//                    log.error("Error: {} - {} : Something fucked", response.code(), response.message());
-//                    log.error("Response: {}", response.body().string());
-//                    return String.format("{\"error_code\": %d, \"error_message\": \"%s\"}", response.code(), response.message());
-//                }
-                assert response.body() != null;
-                return response.body().string();
+                int statusCode = response.code();
+                String responseBody = response.body() != null ? response.body().string() : "";
+
+                JsonNode jsonData;
+                jsonData = objectMapper.readTree(responseBody);
+
+                if (!response.isSuccessful()) {
+                    log.error("Error: {} - {}", statusCode, response.message());
+                    ApiResponse<JsonNode> errorResponse = new ApiResponse<>(statusCode, response.message(), jsonData);
+                    return ResponseEntity.status(statusCode).body(errorResponse);
+                }
+
+                ApiResponse<JsonNode> successResponse = new ApiResponse<>(statusCode, "Success", jsonData);
+
+                return ResponseEntity.status(statusCode).body(successResponse);
             } catch (Exception e) {
                 log.error("Exception in API call: ", e);
-                return String.format("{\"error_code\": 500, \"error_message\": \"%s\"}", e.getMessage());
+                ApiErrorResponse<String> errorResponse = new ApiErrorResponse<>(500, "Internal Server Error", e.getMessage(),null);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
             }
+
         } catch (Exception e) {
-            log.error("Error while converting DTO to JSON", e);
-            return "{\"error_code\": 500, \"error_message\": \"Failed to serialize request\"}";
+            log.error("Exception in API call: ", e);
+            ApiErrorResponse<String> errorResponse = new ApiErrorResponse<>(500, "Internal Server Error", e.getMessage(),null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 

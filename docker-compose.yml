@@ -1,8 +1,7 @@
 
 services:
   backend:
-    image: ipeyu-backend-admin  # The image name from your Docker build
-    build: .  # Builds from the Dockerfile in the current directory
+    image: heterophyllustechnologyllp/ipeyu-backend-admin:latest # The image name from your Docker build
     container_name: iPeyU-backend
     ports:
       - "8009:8008"  # Map container port 8009 to host port 8008
