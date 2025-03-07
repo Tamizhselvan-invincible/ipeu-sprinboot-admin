@@ -45,23 +45,6 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Create .env File for Docker Compose
-        run: |
-          echo "SERVER_PORT=8008" >> .env
-          echo "SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}" >> .env
-          echo "SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}" >> .env
-          echo "SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}" >> .env
-          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
-          echo "AES_ENCRYPTION_KEY=${{ secrets.AES_ENCRYPTION_KEY }}" >> .env
-          echo "JWT_ACCESS_TOKEN_EXPIRATION=${{ secrets.JWT_ACCESS_TOKEN_EXPIRATION }}" >> .env
-          echo "JWT_REFRESH_TOKEN_EXPIRATION=${{ secrets.JWT_REFRESH_TOKEN_EXPIRATION }}" >> .env
-          echo "PAY_SPRINT_BASE_URL=${{ secrets.PAY_SPRINT_BASE_URL }}" >> .env
-          echo "PAY_SPRINT_JWT_KEY=${{ secrets.PAY_SPRINT_JWT_KEY }}" >> .env
-          echo "PAY_SPRINT_AUTHORIZED_KEY=${{ secrets.PAY_SPRINT_AUTHORIZED_KEY }}" >> .env
-          echo "PAY_SPRINT_PARTNER_ID=${{ secrets.PAY_SPRINT_PARTNER_ID }}" >> .env
-          echo "SCRIZA_BASE_URL=${{ secrets.SCRIZA_BASE_URL }}" >> .env
-          echo "SCRIZA_API_TOKEN=${{ secrets.SCRIZA_API_TOKEN }}" >> .env
-
       - name: Pull Latest Docker Image
         run: docker pull heterophyllustechnologyllp/ipeyu-backend-admin:latest
 
@@ -69,6 +52,6 @@ jobs:
         run: docker rm -f ipeyu-backend-admin-container || true
 
       - name: Run Docker Container
-        run:  docker run -d --name ipeyu-backend-admin-container --env-file .env -p 8009:8008 heterophyllustechnologyllp/ipeyu-backend-admin:latest
+        run:  docker run -d --name ipeyu-backend-admin-container -p 8009:8008 heterophyllustechnologyllp/ipeyu-backend-admin:latest
 
 
